@@ -1,0 +1,165 @@
+// Gladiator Gym — Prisma schéma (Fáza 1)
+//
+// Web zatiaľ renderuje obsah z lib/gym.ts a lib/pricing.ts (jediný zdroj
+// pravdy bez CMS). Tabuľky Pobocka/Trener/Sluzba/Cennik/Clen sú pripravené
+// na neskoršiu správu obsahu a členské účty — Fáza 1 do nich nezapisuje.
+// Aktívne používané: Objednavka (Stripe platby) a Dopyt (rezervácie/kontakt).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ObjednavkaStav {
+  PENDING
+  PAID
+  FAILED
+}
+
+// Pripravené pre neskoršie uplatnenie vstupu (Fáza 1 nezapisuje):
+// EMAIL = ručné overenie na recepcii, QR / CHIP prídu neskôr.
+enum RedemptionMethod {
+  EMAIL
+  QR
+  CHIP
+}
+
+enum ProduktTyp {
+  VSTUP
+  PERMANENTKA
+  BALIK
+  INE
+}
+
+enum DopytTyp {
+  REZERVACIA
+  KONTAKT
+}
+
+model Pobocka {
+  id        String   @id @default(cuid())
+  kluc      String   @unique // "lucenec"
+  nazov     String
+  adresa    String?
+  telefon   String?
+  email     String?
+  aktivna   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  treneri  Trener[]
+  sluzby   Sluzba[]
+  cennik   Cennik[]
+  clenovia Clen[]
+}
+
+model Trener {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  meno      String
+  bio       String?
+  foto      String? // URL/cesta k fotke — zatiaľ placeholder
+  aktivny   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pobockaId String?
+  pobocka   Pobocka? @relation(fields: [pobockaId], references: [id])
+}
+
+model Sluzba {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nazov     String
+  popis     String?
+  aktivna   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pobockaId String?
+  pobocka   Pobocka? @relation(fields: [pobockaId], references: [id])
+}
+
+model Cennik {
+  id              String     @id @default(cuid())
+  kluc            String     @unique // napr. "vstup-jednorazovy"
+  nazov           String
+  popis           String?
+  typ             ProduktTyp
+  cenaCenty       Int? // null = cena na vyžiadanie
+  mena            String     @default("eur")
+  kupitelneOnline Boolean    @default(false)
+  platnost        String? // napr. "2 mesiace"
+  poznamka        String?
+  poradie         Int        @default(0)
+  aktivna         Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  pobockaId String?
+  pobocka   Pobocka? @relation(fields: [pobockaId], references: [id])
+}
+
+// Pripravené pre budúce členské účty — Fáza 1 nezapisuje.
+model Clen {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  meno      String?
+  telefon   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pobockaId  String?
+  pobocka    Pobocka?     @relation(fields: [pobockaId], references: [id])
+  objednavky Objednavka[]
+}
+
+model Objednavka {
+  id              String         @id @default(cuid())
+  cisloObjednavky String         @unique // napr. "GLD-20260718-A7K2"
+  meno            String?
+  email           String?
+  produktKluc     String
+  produktNazov    String
+  produktTyp      ProduktTyp
+  suma            Int // v centoch
+  mena            String         @default("eur")
+  stav            ObjednavkaStav @default(PENDING)
+
+  stripeSessionId       String? @unique
+  stripePaymentIntentId String?
+
+  // Pripravené pre QR/čip fázu — Fáza 1 tieto polia nezapisuje ani nečíta.
+  // Doplnenie logiky neskôr NEVYŽADUJE migráciu meniacu existujúce dáta.
+  redemptionMethod RedemptionMethod?
+  redeemedAt       DateTime?
+
+  clenId String?
+  clen   Clen?   @relation(fields: [clenId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([stav, createdAt])
+}
+
+// Zber dopytov z formulárov (rezervácia = zatiaľ len dopyt bez automatického
+// potvrdzovania termínu; kontaktný formulár).
+model Dopyt {
+  id               String   @id @default(cuid())
+  typ              DopytTyp
+  meno             String
+  email            String
+  telefon          String?
+  sprava           String?
+  sluzba           String? // slug služby pri rezervácii
+  terminPozadovany String? // voľný text — bez automatického potvrdzovania
+  vybaveny         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  @@index([typ, vybaveny, createdAt])
+}

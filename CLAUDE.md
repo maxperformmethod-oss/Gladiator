@@ -1,31 +1,61 @@
-# CLAUDE.md — GLADIATOR
+# CLAUDE.md — Gladiator Gym Lučenec
 
-React + Vite + TypeScript + Tailwind v4 aplikácia. Jazyk obsahu: SK. Tmavý „nočný" režim je jediný a predvolený.
+Prémiový web pre Gladiator Gym (pobočka Lučenec) s online predajom vstupov cez
+Stripe. Jazyk obsahu: SK. „Body Building Factory", est. 2023, claim: „Osloboď to
+najlepšie zo samého seba".
 
-## Stack / konvencie
+## Stack
 
-- **React 19** + **react-router-dom 7**, **Vite 8** (+ vite-plugin-pwa), **TypeScript 6**.
-- **Tailwind v4 CSS-first**: dizajn tokeny v `src/index.css` cez `@theme`. **Žiadny `tailwind.config.js`.** Nepridávať náhodné farby mimo tokenov.
-- **Lint**: `oxlint` (`npm run lint`). Pravidlá v `.oxlintrc.json`.
-- **framer-motion** na animácie: jemné (300–600 ms, ease-out), `prefers-reduced-motion` fallback povinný.
-- Ikony: **lucide-react**.
+- **Next.js 15 App Router** + React 19 + TypeScript (`src/app/`)
+- **Tailwind v4 CSS-first** — tokeny v `src/app/globals.css` cez `@theme`,
+  ŽIADNY `tailwind.config.js`. Nepridávať farby mimo tokenov.
+- **Prisma + PostgreSQL (Neon)** — `prisma/schema.prisma`
+- **Stripe Checkout** (`price_data` z cenníka — žiadne ručné Stripe produkty)
+- **framer-motion** — jemné animácie, `MotionConfig reducedMotion="user"`
+  v `src/components/Providers.tsx` je POVINNÝ wrapper
+
+## Dizajn — NEMENIŤ bez pokynu
+
+- Farby: čierna `#0A0A0A` / antracit `#1A1A1A` / zlatá `#D4AF37` (presná hodnota
+  TBD z loga) / biela typografia. Hexagónový LED motív (`.hex-pattern`).
+- Fonty: Oswald (display, uppercase, kondenzovaný) + Inter (text) cez `next/font`.
+- ŽIADNE stock fotky — len `PlaceholderImage` s poznámkou „NAHRADIŤ REÁLNOU
+  FOTKOU LC". Mobile-first, ľahké animácie.
+- Tón: sebavedomý, priamy, žiadny gýč.
+
+## Pravdivosť obsahu — KRITICKÉ
+
+- NEVYMÝŠĽAŤ fakty (m², počty strojov, ceny, mená) — všade kde chýbajú, `TbdBadge`.
+- Obsah žije VÝHRADNE v `src/lib/gym.ts` a `src/lib/pricing.ts` (jediný zdroj
+  pravdy, pripravené na neskorší CMS) — žiadne hardcoded texty v JSX.
+- Neoverené dáta majú flagy (`CENNIK_OVERENY`, `TRENERI_OVERENI`,
+  `KONTAKT.overene`) — prepínať až po potvrdení majiteľom.
+
+## Platby
+
+- Stripe VŽDY TEST MODE, kým neprebehne právna kontrola podmienok (pozri
+  TODO.md sekcia 4 na prepnutie do produkcie).
+- Flow: `/api/checkout` (Objednavka PENDING + session) → Stripe → webhook
+  `/api/stripe/webhook` (PAID) + fallback na success stránke.
+- Číslo objednávky `GLD-YYYYMMDD-XXXX` = kľúč pre recepciu (ručné overenie).
+- Admin: `/admin/objednavky`, Basic Auth cez `src/middleware.ts`
+  (`ADMIN_USER`/`ADMIN_PASSWORD`).
+
+## Rozsah Fázy 1 — NEZAVÁDZAŤ
+
+Žiadne user účty, blog/CMS, multi-jazyk, QR/čip logika, subscriptions.
+Schéma má pripravené tabuľky (Clen, …) a stĺpce (`redemptionMethod`,
+`redeemedAt`) — NEPOUŽÍVAŤ ich, len ich nechať pripravené.
 
 ## Príkazy
 
-- `npm run dev` — dev server
-- `npm run build` — `tsc -b && vite build` (build musí prejsť bez TS chýb)
-- `npm run lint` — oxlint (0 chýb pred commitom)
-- `npm run preview` — náhľad produkčného buildu
+- `npm run dev` / `npm run build` / `npm run lint` (build aj lint musia prejsť)
+- `npx prisma generate` po zmene schémy; `npx prisma migrate dev` len s reálnou DB
+- DB stránky sú `force-dynamic` — build NEsmie vyžadovať bežiacu DB
 
-## Autor / git
+## Git / deploy
 
-- Autor: **Maxim Malovec** · maximmalovec8@gmail.com
-- Pred commitom: `npm run lint` + `npm run build` bez chýb.
-
-## Deploy
-
-- **Vercel**, SPA rewrite (`vercel.json` + `public/_redirects`) — všetky cesty → `/index.html`.
-
-## Poznámky
-
-- Obsah je zatiaľ prázdny skeleton (`src/App.tsx`) — čistý štart. Doplň štruktúru (pages/, components/, state/, utils/) podľa potreby.
+- Remote: `maxperformmethod-oss/Gladiator`, autor Maxim Malovec
+  (maximmalovec8@gmail.com). Deploy: Vercel.
+- `TODO.md` = zoznam všetkých TBD + kroky Stripe test→prod. Pri zmenách
+  udržiavať aktuálny.
