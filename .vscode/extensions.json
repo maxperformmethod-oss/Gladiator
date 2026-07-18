@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "anthropic.claude-code",
+    "mhutchie.git-graph",
+    "ms-playwright.playwright"
+  ]
+}
