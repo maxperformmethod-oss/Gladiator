@@ -12,7 +12,7 @@ npx prisma generate        # Prisma klient (spúšťa sa aj automaticky)
 npm run dev                # dev server na http://localhost:3000
 ```
 
-S reálnou databázou (Neon):
+S reálnou databázou (Supabase — connection stringy pozri `.env.example`):
 
 ```bash
 npx prisma migrate dev --name init   # vytvorí tabuľky
@@ -30,7 +30,7 @@ Testovacia platba: karta `4242 4242 4242 4242`, ľubovoľná expirácia v budúc
 ## Stack
 
 Next.js 15 (App Router) · React 19 · TypeScript · Tailwind v4 (CSS-first) ·
-Prisma + Neon Postgres · Stripe Checkout · framer-motion · Vercel
+Prisma + Supabase Postgres · Stripe Checkout · framer-motion · Vercel
 
 ## Štruktúra
 

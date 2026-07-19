@@ -9,7 +9,9 @@ najlepšie zo samého seba".
 - **Next.js 15 App Router** + React 19 + TypeScript (`src/app/`)
 - **Tailwind v4 CSS-first** — tokeny v `src/app/globals.css` cez `@theme`,
   ŽIADNY `tailwind.config.js`. Nepridávať farby mimo tokenov.
-- **Prisma + PostgreSQL (Neon)** — `prisma/schema.prisma`
+- **Prisma + PostgreSQL (Supabase)** — `prisma/schema.prisma`; pooler URL za
+  behu (`DATABASE_URL`), direct URL pre migrácie (`DIRECT_URL`). Supabase kvôli
+  Fáze 2 (natívny auth + realtime pre QR vstupy) — auth sa zatiaľ NEpoužíva.
 - **Stripe Checkout** (`price_data` z cenníka — žiadne ručné Stripe produkty)
 - **framer-motion** — jemné animácie, `MotionConfig reducedMotion="user"`
   v `src/components/Providers.tsx` je POVINNÝ wrapper

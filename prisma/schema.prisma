@@ -11,7 +11,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Supabase: DATABASE_URL = pooler (pgbouncer, port 6543) pre runtime,
+  // DIRECT_URL = priame pripojenie (port 5432) pre `prisma migrate`.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum ObjednavkaStav {
