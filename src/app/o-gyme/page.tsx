@@ -3,7 +3,7 @@ import { Section } from '@/components/ui/Section'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { Card } from '@/components/ui/Card'
 import { Reveal } from '@/components/ui/Reveal'
-import { PlaceholderImage } from '@/components/ui/PlaceholderImage'
+import { PhotoReveal } from '@/components/ui/PhotoReveal'
 import { TbdBadge } from '@/components/ui/TbdBadge'
 import { ButtonLink } from '@/components/ui/Button'
 import { BRAND, VYBAVENIE_ZONY } from '@/lib/gym'
@@ -46,9 +46,29 @@ export default function OGymePage() {
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <PlaceholderImage label="Interiér arény — celkový záber" aspect="aspect-[4/3]" />
+            <PhotoReveal
+              src="/fotky/rekorder.jpg"
+              alt="Známy športovec na návšteve v aréne Gladiator Gym"
+              aspect="aspect-[3/4]"
+              sizes="(max-width: 1024px) 100vw, 552px"
+              imgClassName="object-top"
+              caption="Aréna, kam chodia aj profíci"
+            />
           </Reveal>
         </div>
+      </Section>
+
+      {/* Komunita — široký záber s majiteľmi a hosťami */}
+      <Section className="pt-0">
+        <PhotoReveal
+          src="/fotky/majitelia-krizo.jpg"
+          alt="Komunita Gladiator Gymu — majitelia s hosťami v aréne"
+          aspect="aspect-[16/9] md:aspect-[21/9]"
+          sizes="(max-width: 1152px) 100vw, 1104px"
+          hoverZoom={false}
+          imgClassName="object-[50%_35%]"
+          caption="Komunita, ktorá ťa potiahne"
+        />
       </Section>
 
       <Section className="border-t border-line">

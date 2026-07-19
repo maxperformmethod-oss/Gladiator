@@ -97,6 +97,31 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Light sweep na zlatých CTA — jediný „glow" efekt, len na hover. */
+.btn-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.btn-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 55%;
+  transform: translateX(-130%) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  pointer-events: none;
+}
+.btn-sweep:hover::after {
+  transform: translateX(300%) skewX(-18deg);
+  transition: transform 0.65s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-sweep::after {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

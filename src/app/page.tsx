@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { ButtonLink } from '@/components/ui/Button'
 import { Reveal } from '@/components/ui/Reveal'
 import { Notice } from '@/components/ui/Notice'
-import { PlaceholderImage } from '@/components/ui/PlaceholderImage'
+import { PhotoReveal } from '@/components/ui/PhotoReveal'
 import { TrainerCard } from '@/components/TrainerCard'
 import { BRAND, EVENTY, SLUZBY, TRENERI, TRENERI_OVERENI, USP } from '@/lib/gym'
 
@@ -38,14 +38,28 @@ export default function HomePage() {
         </div>
       </Section>
 
-      {/* Foto pás — placeholder za reálne fotky arény */}
+      {/* Brand banner — signature záber gladiátora */}
       <Section className="pt-0">
-        <Reveal>
-          <PlaceholderImage
-            label="Hlavná sála — industriálna aréna, hexagónové LED svetlá"
-            aspect="aspect-[21/9]"
+        <div className="relative">
+          <PhotoReveal
+            src="/fotky/brand-gladiator.jpg"
+            alt="Cvičenec v gladiátorskej zbroji dvíha jednoručky v aréne Gladiator Gym"
+            aspect="aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9]"
+            sizes="(max-width: 1152px) 100vw, 1104px"
+            hoverZoom={false}
+            imgClassName="object-[70%_20%] sm:object-[50%_25%]"
           />
-        </Reveal>
+          <div className="pointer-events-none absolute inset-0 flex items-end rounded-2xl bg-gradient-to-t from-bg/85 via-transparent to-transparent">
+            <div className="p-5 md:p-8">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-gold">
+                {BRAND.tagline}
+              </p>
+              <p className="display mt-1 text-2xl text-ink md:text-4xl">
+                Tu sa nechodí pózovať
+              </p>
+            </div>
+          </div>
+        </div>
       </Section>
 
       {/* Služby */}

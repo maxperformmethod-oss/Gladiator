@@ -8,7 +8,7 @@ const base =
   'display inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm tracking-[0.12em] transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50'
 
 const variants: Record<Variant, string> = {
-  gold: 'bg-gold text-bg hover:bg-gold-hi',
+  gold: 'btn-sweep bg-gold text-bg hover:bg-gold-hi',
   outline: 'border border-gold-dim text-gold hover:border-gold hover:text-gold-hi',
   ghost: 'text-ink-dim hover:text-ink',
 }

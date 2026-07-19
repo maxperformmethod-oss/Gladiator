@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Section } from '@/components/ui/Section'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { Reveal } from '@/components/ui/Reveal'
+import { PhotoReveal } from '@/components/ui/PhotoReveal'
 import { PlaceholderImage } from '@/components/ui/PlaceholderImage'
 import { ButtonLink } from '@/components/ui/Button'
 import { SLUZBY } from '@/lib/gym'
@@ -28,7 +29,17 @@ export default function SluzbyPage() {
                 i % 2 === 1 ? 'md:[&>*:first-child]:order-2' : ''
               }`}
             >
-              <PlaceholderImage label={s.nazov} aspect="aspect-[16/9]" />
+              {s.foto ? (
+                <PhotoReveal
+                  src={s.foto}
+                  alt={`${s.nazov} v Gladiator Gyme`}
+                  aspect="aspect-[16/9]"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 552px"
+                  imgClassName={s.fotoPozicia}
+                />
+              ) : (
+                <PlaceholderImage label={s.nazov} aspect="aspect-[16/9]" />
+              )}
               <div>
                 <p className="display text-2xl text-ink md:text-3xl">{s.nazov}</p>
                 <p className="mt-3 max-w-md text-ink-dim">{s.popis}</p>

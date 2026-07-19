@@ -1,22 +1,25 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import Image from 'next/image'
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { BRAND } from '@/lib/gym'
 import { ButtonLink } from '@/components/ui/Button'
 
 /**
- * Hero — fullscreen, jemný parallax pozadia, claim značky.
- * Pozadie = placeholder; príde reálne foto/video z arény LC.
+ * Hero — reálny letecký záber arény: pomalý scale-settle pri načítaní,
+ * jemný parallax pri scrolli, gradient overlaye pre čitateľnosť textu
+ * (najmä na mobile). Reduced motion → statické zobrazenie.
  */
 export function Hero() {
   const ref = useRef<HTMLElement>(null)
+  const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
   })
-  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '18%'])
+  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '16%'])
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0])
 
   return (
@@ -24,16 +27,29 @@ export function Hero() {
       ref={ref}
       className="relative flex min-h-[calc(100dvh-4rem)] items-center overflow-hidden"
     >
-      {/* Parallax pozadie — hex motív + zlatá žiara (placeholder za foto/video) */}
+      {/* Fotka arény s parallaxou a pomalým scale-settle */}
       <motion.div style={{ y: bgY }} className="absolute inset-0" aria-hidden>
-        <div className="hex-pattern absolute inset-0" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_38%,rgba(212,175,55,0.13),transparent_70%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-bg to-transparent" />
+        <motion.div
+          className="absolute inset-0"
+          initial={reduce ? false : { scale: 1.12 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Image
+            src="/fotky/hero-arena.jpg"
+            alt="Letecký pohľad na tréningovú arénu Gladiator Gym — stroje a voľné váhy v čierno-zlatej hale"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        </motion.div>
+        {/* Overlaye: čitateľnosť textu + plynulý prechod do čiernej */}
+        <div className="absolute inset-0 bg-gradient-to-r from-bg/85 via-bg/45 to-bg/25" />
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-bg to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg/70 to-transparent" />
+        <div className="hex-pattern absolute inset-0 opacity-60" />
       </motion.div>
-
-      <p className="absolute right-4 top-4 z-10 text-[10px] font-semibold uppercase tracking-[0.2em] text-warning/70">
-        Pozadie: nahradiť reálnou fotkou / videom LC
-      </p>
 
       <motion.div
         style={{ opacity: fade }}
@@ -43,7 +59,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="mb-5 inline-flex items-center gap-3 rounded-full border border-line-strong bg-surface/60 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink-dim"
+          className="mb-5 inline-flex items-center gap-3 rounded-full border border-line-strong bg-bg/60 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-ink-dim backdrop-blur-sm"
         >
           <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden />
           {BRAND.tagline} · est. {BRAND.zalozene} · {BRAND.pobocka}

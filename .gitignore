@@ -39,3 +39,6 @@ next-env.d.ts
 
 # lokálne Claude nastavenia
 .claude/
+
+# originálne IG screenshoty — commitujú sa len optimalizované public/fotky/
+public/Fotky gym/

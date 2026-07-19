@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Section } from '@/components/ui/Section'
-import { PlaceholderImage } from '@/components/ui/PlaceholderImage'
+import { PhotoReveal } from '@/components/ui/PhotoReveal'
 import { Notice } from '@/components/ui/Notice'
 import { ButtonLink } from '@/components/ui/Button'
 import { TbdBadge } from '@/components/ui/TbdBadge'
@@ -42,9 +42,13 @@ export default async function TrenerDetailPage({
       </Link>
 
       <div className="grid gap-10 lg:grid-cols-[2fr_3fr]">
-        <PlaceholderImage
-          label={`Portrét — ${trener.meno}`}
-          aspect="aspect-[3/4]"
+        <PhotoReveal
+          src={trener.fotoKarta}
+          alt={`${trener.meno} — tréner Gladiator Gymu`}
+          aspect="aspect-[9/15]"
+          sizes="(max-width: 1024px) 100vw, 440px"
+          priority
+          hoverZoom={false}
         />
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">

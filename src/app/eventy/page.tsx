@@ -4,6 +4,7 @@ import { Section } from '@/components/ui/Section'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { Card } from '@/components/ui/Card'
 import { Reveal } from '@/components/ui/Reveal'
+import { PhotoReveal } from '@/components/ui/PhotoReveal'
 import { ButtonLink } from '@/components/ui/Button'
 import { BRAND, EVENTY } from '@/lib/gym'
 
@@ -21,19 +22,30 @@ export default function EventyPage() {
         lead="Súťaže, spoločné tréningy a akcie pobočky."
       />
       {EVENTY.length === 0 ? (
-        <Reveal>
-          <Card className="flex flex-col items-center gap-4 py-16 text-center">
-            <CalendarDays size={32} className="text-gold" aria-hidden />
-            <p className="display text-2xl text-ink">Pripravujeme</p>
-            <p className="max-w-md text-sm text-ink-dim">
-              Prvé eventy pobočky {BRAND.pobocka} zverejníme čoskoro. Medzitým sa
-              zastav osobne — aréna je otvorená 7 dní v týždni.
-            </p>
-            <ButtonLink href="/kontakt" variant="outline" className="mt-2">
-              Kde nás nájdeš
-            </ButtonLink>
-          </Card>
-        </Reveal>
+        <div className="space-y-6">
+          {/* Atmosféra z minulej akcie — event fotka */}
+          <PhotoReveal
+            src="/fotky/event-dav.jpg"
+            alt="Event v Gladiator Gyme — tlaky na lavičke pred davom divákov"
+            aspect="aspect-[16/9] md:aspect-[21/9]"
+            sizes="(max-width: 1152px) 100vw, 1104px"
+            hoverZoom={false}
+            caption="Takto vyzerá event v aréne"
+          />
+          <Reveal>
+            <Card className="flex flex-col items-center gap-4 py-12 text-center">
+              <CalendarDays size={32} className="text-gold" aria-hidden />
+              <p className="display text-2xl text-ink">Pripravujeme</p>
+              <p className="max-w-md text-sm text-ink-dim">
+                Prvé eventy pobočky {BRAND.pobocka} zverejníme čoskoro. Medzitým sa
+                zastav osobne — aréna je otvorená 7 dní v týždni.
+              </p>
+              <ButtonLink href="/kontakt" variant="outline" className="mt-2">
+                Kde nás nájdeš
+              </ButtonLink>
+            </Card>
+          </Reveal>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {EVENTY.map((e) => (

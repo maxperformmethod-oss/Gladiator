@@ -1,7 +1,12 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
+import { TextReveal } from '@/components/ui/TextReveal'
 
-/** Nadpis sekcie: zlatý eyebrow + kondenzovaný uppercase titul + voliteľný text. */
+/**
+ * Nadpis sekcie: zlatý eyebrow + kondenzovaný uppercase titul + voliteľný text.
+ * Textové tituly dostanú word-stagger reveal; JSX tituly (so zlatým akcentom)
+ * sa renderujú priamo.
+ */
 export function SectionHeading({
   eyebrow,
   title,
@@ -20,7 +25,9 @@ export function SectionHeading({
           {eyebrow}
         </p>
       )}
-      <h2 className="display text-3xl text-ink md:text-5xl">{title}</h2>
+      <h2 className="display text-3xl text-ink md:text-5xl">
+        {typeof title === 'string' ? <TextReveal text={title} /> : title}
+      </h2>
       {lead && <p className="mt-4 text-base text-ink-dim md:text-lg">{lead}</p>}
     </div>
   )
