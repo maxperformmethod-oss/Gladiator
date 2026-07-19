@@ -27,8 +27,9 @@ export function Header() {
   const navItems = NAV.filter((item) => item.href !== '/')
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 md:px-6">
+    <>
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 md:px-6">
         <Link href="/" className="flex items-baseline gap-2" aria-label="Domov">
           <span className="display text-xl text-ink">
             GLADIATOR <span className="gold-text">GYM</span>
@@ -70,11 +71,17 @@ export function Header() {
         >
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
-      </div>
+        </div>
+      </header>
 
-      {/* Mobilné menu — fullscreen overlay pod headrom */}
+      {/*
+       * Mobilné menu — SÚRODENEC headera, nie jeho dieťa. Header má
+       * backdrop-blur (backdrop-filter), čo z neho robí containing block pre
+       * `fixed` potomkov — vnútri neho by overlay skolaboval na výšku 0.
+       * Ako súrodenec sa `fixed` pozicuje voči viewportu (celá obrazovka).
+       */}
       {open && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto bg-bg lg:hidden">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto overscroll-contain bg-bg lg:hidden">
           <nav
             className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-6"
             aria-label="Mobilná navigácia"
@@ -112,6 +119,6 @@ export function Header() {
           </nav>
         </div>
       )}
-    </header>
+    </>
   )
 }
