@@ -48,7 +48,9 @@ mieste. Po dodaní údajov je pri každom bode uvedené, KDE v kóde sa mení.
    ```bash
    npx prisma migrate dev --name init
    ```
-   Vytvorí všetky tabuľky (Pobocka, Trener, Sluzba, Cennik, Clen, Objednavka, Dopyt).
+   Vytvorí všetkých 10 tabuliek v jednej migrácii: Pobocka, Trener, Sluzba,
+   Cennik, Clen, Objednavka, Dopyt + Fáza 2 modely Permanentka, QRToken,
+   VstupHistoria (prázdne, bez logiky — pripravené pre členský QR systém).
 5. Auth/realtime z dashboardu teraz NEzapínaj ani nekonfiguruj — Fáza 2.
 
 ### 3b. GitHub ↔ Vercel prepojenie — RUČNÉ KROKY
@@ -121,8 +123,11 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
   objednávky (zákazník ho vidí na stránke potvrdenia). Vlastný email
   (Resend/SMTP) = kandidát na Fázu 2.
 - **Mesačná permanentka** sa predáva ako jednorazová platba (nie subscription).
-- **Žiadne QR/čip** — schéma `Objednavka` má pripravené prázdne stĺpce
-  `redemptionMethod` + `redeemedAt` (doplnenie logiky nevyžaduje migráciu).
+- **Žiadne QR/čip vo Fáze 1** — ale schéma je na Fázu 2 plne pripravená:
+  modely `Permanentka`, `QRToken`, `VstupHistoria` (+ vzťahy na `Clen`
+  a `Pobocka`) existujú a sú prázdne; `Objednavka` má prázdne stĺpce
+  `redemptionMethod` + `redeemedAt` a TODO komentár „po PAID vytvoriť/
+  predĺžiť Permanentku". Fáza 2 = len logika + API, žiadna zmena schémy.
 - **Žiadny rate-limiting formulárov** — zvážiť pri reálnej prevádzke.
 - **Obsah v `lib/`** (gym.ts, pricing.ts) namiesto DB — presun do DB/CMS až
   v ďalšej fáze (tabuľky už existujú v `prisma/schema.prisma`).

@@ -10,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   // Supabase: DATABASE_URL = pooler (pgbouncer, port 6543) pre runtime,
   // DIRECT_URL = priame pripojenie (port 5432) pre `prisma migrate`.
   url       = env("DATABASE_URL")
@@ -43,6 +43,19 @@ enum DopytTyp {
   KONTAKT
 }
 
+// ── Fáza 2 (členský QR systém) — pripravené, zatiaľ NEPOUŽÍVANÉ ──────────
+
+enum PermanentkaStav {
+  AKTIVNA
+  EXPIROVANA
+  ZRUSENA
+}
+
+enum SposobVstupu {
+  QR
+  RUCNE
+}
+
 model Pobocka {
   id        String   @id @default(cuid())
   kluc      String   @unique // "lucenec"
@@ -54,10 +67,12 @@ model Pobocka {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  treneri  Trener[]
-  sluzby   Sluzba[]
-  cennik   Cennik[]
-  clenovia Clen[]
+  treneri     Trener[]
+  sluzby      Sluzba[]
+  cennik      Cennik[]
+  clenovia    Clen[]
+  permanentky Permanentka[]
+  vstupy      VstupHistoria[]
 }
 
 model Trener {
@@ -119,6 +134,11 @@ model Clen {
   pobockaId  String?
   pobocka    Pobocka?     @relation(fields: [pobockaId], references: [id])
   objednavky Objednavka[]
+
+  // Fáza 2 — členský QR systém (tabuľky ostávajú prázdne do Fázy 2)
+  permanentky Permanentka[]
+  qrTokeny    QRToken[]
+  vstupy      VstupHistoria[]
 }
 
 model Objednavka {
@@ -141,6 +161,7 @@ model Objednavka {
   redemptionMethod RedemptionMethod?
   redeemedAt       DateTime?
 
+  // TODO Fáza 2: po stave PAID vytvoriť/predĺžiť Permanentku pre priradeného Clen
   clenId String?
   clen   Clen?   @relation(fields: [clenId], references: [id])
 
@@ -148,6 +169,54 @@ model Objednavka {
   updatedAt DateTime @updatedAt
 
   @@index([stav, createdAt])
+}
+
+// ── Fáza 2 modely — čisto schéma, žiadna logika ani API (tabuľky prázdne) ──
+
+// Členská permanentka — vznikne z PAID objednávky (viď TODO v Objednavka).
+model Permanentka {
+  id         String          @id @default(cuid())
+  typ        String // kľúč položky cenníka (napr. "permanentka-mesacna")
+  platnostOd DateTime
+  platnostDo DateTime
+  stav       PermanentkaStav @default(AKTIVNA)
+  createdAt  DateTime        @default(now())
+
+  clenId    String
+  clen      Clen    @relation(fields: [clenId], references: [id])
+  pobockaId String
+  pobocka   Pobocka @relation(fields: [pobockaId], references: [id])
+
+  @@index([clenId, stav])
+}
+
+// Jednorazový QR token pre vstup (krátka expirácia, jedno použitie).
+model QRToken {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  vytvorenyAt DateTime @default(now())
+  expirujeO   DateTime
+  pouzity     Boolean  @default(false)
+
+  clenId String
+  clen   Clen   @relation(fields: [clenId], references: [id])
+
+  @@index([clenId, pouzity])
+}
+
+// História vstupov — QR čítačka aj ručné overenie na recepcii.
+model VstupHistoria {
+  id       String       @id @default(cuid())
+  datumCas DateTime     @default(now())
+  sposob   SposobVstupu
+  uspesny  Boolean
+
+  clenId    String
+  clen      Clen    @relation(fields: [clenId], references: [id])
+  pobockaId String
+  pobocka   Pobocka @relation(fields: [pobockaId], references: [id])
+
+  @@index([clenId, datumCas])
 }
 
 // Zber dopytov z formulárov (rezervácia = zatiaľ len dopyt bez automatického
