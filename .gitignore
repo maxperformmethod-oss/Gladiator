@@ -42,3 +42,6 @@ next-env.d.ts
 
 # originálne IG screenshoty — commitujú sa len optimalizované public/fotky/
 public/Fotky gym/
+
+# lokálne prezentácie / návrhy (napr. Community proposal) — nepatria do repa
+*.pptx
