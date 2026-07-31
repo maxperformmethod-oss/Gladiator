@@ -35,7 +35,7 @@ sekcie 2 a 6, a toto zadanie. **Nerob audit repozitára, nerekonštruuj históri
 - necommituj a nepushuj bez schválenia
 
 ```
-git checkout main && git pull        → a1f1c45
+git checkout main && git pull        → základ potvrdí Maxim
 git checkout -b feat/auth-flow
 ```
 
@@ -113,8 +113,9 @@ getClen(): Promise<Clen | null>
  * Doplní chýbajúci záznam Clen k existujúcemu Supabase účtu.
  * Idempotentné — ak už existuje, iba ho vráti.
  * Rieši prípad, keď registrácia zlyhala medzi krokom 3 a 4.
+ * NIKDY negeneruje prezývku — pri chýbajúcom Clen bez prezývky vráti null.
  */
-zabezpecClena(prezyvka?: string): Promise<Clen>
+zabezpecClena(prezyvka?: string): Promise<Clen | null>
 
 /** Vyžaduje prihláseného a aktívneho člena. Inak presmeruje na /prihlasenie. */
 requireClen(): Promise<Clen>
@@ -122,6 +123,21 @@ requireClen(): Promise<Clen>
 /** Vyžaduje rolu ADMIN. Inak notFound(). */
 requireAdmin(): Promise<Clen>
 ```
+
+**Záväzné pravidlo pre `zabezpecClena()` — NIKDY negeneruje prezývku:**
+
+| Stav | Výsledok |
+| --- | --- |
+| `Clen` existuje | vráť ho |
+| neexistuje + `prezyvka` daná | vytvor (`rola: 'CLEN'`) a vráť |
+| neexistuje + bez `prezyvky` | vráť `null` |
+
+Keď `zabezpecClena()` vráti `null`, volajúci to musí ošetriť presmerovaním
+na `/registracia/prezyvka`:
+
+- `prihlas()` (Časť C) — pri `null` presmeruj na `/registracia/prezyvka`
+- `/api/auth/callback` (Časť C) — to isté
+- `requireClen()` — to isté
 
 **Tvrdé pravidlá:**
 
@@ -250,6 +266,18 @@ a `src/app/prihlasenie/page.tsx`.
 
 Pridaj `src/app/registracia/hotovo/page.tsx` — „Skontroluj si e-mail".
 
+## C3b. `src/app/registracia/prezyvka/page.tsx` — doplnenie prezývky
+
+Stránka pre prípad, keď je používateľ **prihlásený cez Supabase, ale nemá
+záznam `Clen`** (napr. `zabezpecClena()` vrátila `null`).
+
+- vyžaduje prihlásenú Supabase session, ale žiadny `Clen`
+- jediné pole: **prezývka** (pravidlá podľa A2)
+- po odoslaní: validácia + kontrola voľnosti `prezyvkaNorm` + `create Clen`
+  s **`rola: 'CLEN'` natvrdo** → redirect `/klub`
+- ak `Clen` už existuje, rovno redirect `/klub`
+- **použi existujúce komponenty** z `src/components/ui/`, **žiadne nové CSS**
+
 ## C4. `src/app/api/auth/callback/route.ts`
 
 Spracuje odkaz z potvrdzovacieho e-mailu:
@@ -303,7 +331,7 @@ git status --short
 git diff --stat
 ```
 
-- [ ] build **40/40 + 1 nová stránka** (`/registracia/hotovo`) = 41/41
+- [ ] build **40/40 + 2 nové stránky** (`/registracia/hotovo`, `/registracia/prezyvka`) = 42/42
 - [ ] `git diff` neobsahuje `layout.tsx`, `globals.css`, `gym.ts`,
       `pricing.ts`, `prisma/`
 - [ ] `/admin/objednavky` stále pýta heslo

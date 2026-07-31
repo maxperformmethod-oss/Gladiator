@@ -131,3 +131,22 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 - **Žiadny rate-limiting formulárov** — zvážiť pri reálnej prevádzke.
 - **Obsah v `lib/`** (gym.ts, pricing.ts) namiesto DB — presun do DB/CMS až
   v ďalšej fáze (tabuľky už existujú v `prisma/schema.prisma`).
+
+## 6. Etapa G+ — bezpečnosť a infraštruktúra (nesplnené)
+
+- [ ] `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated`
+      — verejné roly nemajú mať právo spúšťať tento trigger-helper.
+- [ ] Založiť **staging** Supabase projekt (rozhodnutie D-11, nesplnené) — dnes
+      existuje jediný projekt `dhuynypsdbqdkkaqjxwv`, staging neexistuje.
+- [ ] **Dva Vercel projekty na jednom repozitári:** živý pod účtom RPS-2022
+      (`gladiator-eight.vercel.app`) a mŕtva duplicita pod osobným účtom
+      `maximmalovec8-6717` (`gladiator-ruby.vercel.app`, posledný deploy ~18. 7.).
+      Duplicitu odpojiť od GitHubu alebo zmazať. Kanonický = RPS-2022.
+- [ ] **Vercel MCP konektor** je autorizovaný na osobný účet, nie na RPS-2022 —
+      preautorizovať.
+- [ ] **Sentry projekt vytvorený:** `maxperformstudio / gladiator-gym` (DE región).
+      Zapojenie `@sentry/nextjs` do aplikácie = samostatná etapa, vyžaduje
+      `npm install`, čaká na schválenie.
+      **Poradie:** wizard sa spúšťa AŽ PO dokončení G2, na samostatnej vetve.
+      Mení `next.config.ts` a pridá 2 stránky — zmení očakávaný počet stránok
+      v builde, preto nesmie bežať súčasne s G2.

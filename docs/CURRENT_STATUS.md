@@ -1,6 +1,18 @@
 # CURRENT_STATUS.md — Gladiator Gym
 
-**Verzia 3.0** · 31. 7. 2026
+**Verzia 3.1** · 31. 7. 2026 · po G1, pred G2
+
+---
+
+## Kde presne sme
+
+| | |
+| --- | --- |
+| `main` | `0320ee5` |
+| Otvorený PR | **#22** `chore/line-endings` → `main`, **nezmergovaný** |
+| Commity v PR | `b3212e7` line endings · `9aa076d` roadmap · `f3338f4` vercel + prezývka |
+| Posledná hotová etapa | **G1** — Supabase klienty (`a1f1c45`) |
+| Ďalší krok | **Etapa G2** — zadanie `docs/CLAUDE_CODE_TASK_013.md` |
 
 ---
 
@@ -29,6 +41,31 @@ prihlasovanie ani žiadnu funkciu; `/klub` a `/sprava` sú prázdne stránky.
 | — | príručka obsluhy | `cf63bd6` |
 | E | schéma databázy | `0025618` |
 | **F** | **prvá migrácia na staging** | **`b9eb39d`** |
+| **G1** | **Supabase klienty** | **`a1f1c45`** |
+| — | normalizácia line endings na LF | `b3212e7` (v PR #22) |
+
+---
+
+## Vercel a Sentry — overené cez konektory 31. 7. 2026
+
+### Vercel — dva projekty na jednom repozitári
+
+| | Živý | Mŕtva duplicita |
+| --- | --- | --- |
+| Účet | **RPS-2022** (Pro) | `maximmalovec8-6717's projects` |
+| Doména | `gladiator-eight.vercel.app` | `gladiator-ruby.vercel.app` |
+| Projekt ID | — (MCP naň nevidí) | `prj_HB9ohhHmBaZY7eCb7ZgpuYwfbTja` |
+| Nasadenia | robí PR checks aj produkciu | **1**, z ~18.–19. 7., odvtedy nič |
+
+Kanonický je **RPS-2022**. Duplicitu odpojiť od GitHubu alebo zmazať.
+Vercel MCP konektor je autorizovaný na osobný účet → preautorizovať na RPS-2022.
+
+### Sentry
+
+Organizácia `maxperformstudio` (DE región). Projekt **`gladiator-gym`**
+vytvorený 31. 7. 2026, platforma `javascript-nextjs`, DSN vydané.
+**Do aplikácie zatiaľ nezapojené** — vyžaduje `npm install @sentry/nextjs`.
+DSN patrí do env premennej, nie natvrdo do kódu.
 
 ---
 
@@ -47,13 +84,18 @@ Supabase projekt `Gladiator gym`, ref `dhuynypsdbqdkkaqjxwv`, eu-west-1.
 | `Objednavka_clenId_fkey` | `SET NULL` — účtovný doklad prežije výmaz člena |
 | používatelia v `auth.users` | 0 |
 
+**Jeden nález (WARN):** `public.rls_auto_enable()` je `SECURITY DEFINER`
+a volateľná rolou `anon` cez `/rest/v1/rpc/rls_auto_enable`. Nízka závažnosť,
+ale zbytočná expozícia → `REVOKE EXECUTE`, zapísané v `TODO.md`.
+
 ---
 
 ## Čo neexistuje
 
 Prihlasovanie · roly v praxi · `src/server/` · členské funkcie ·
 administrácia klubu · zálohy databázy · produkčný Supabase projekt ·
-automatizované testy · Sentry · Vercel environment premenné
+automatizované testy · Sentry **v aplikácii** (projekt už existuje) ·
+Vercel environment premenné
 
 ---
 
@@ -63,9 +105,15 @@ automatizované testy · Sentry · Vercel environment premenné
 
 | | Čo | Zadanie |
 | --- | --- | --- |
-| G1 | balíky `@supabase/*`, klientske súbory, premenné | `CLAUDE_CODE_TASK_012.md` |
-| G2 | middleware, registrácia, prihlásenie, obnova hesla | pripraví sa |
+| G1 | balíky `@supabase/*`, klientske súbory, premenné | ✅ **DONE** `a1f1c45` |
+| **G2** | **middleware, registrácia, prihlásenie, obnova hesla** | **`CLAUDE_CODE_TASK_013.md`** |
 | G3 | ochrana `/klub` a `/sprava`, admin rola, odkaz v menu | pripraví sa |
+
+**Poradie:** najprv zmergovať PR #22, potom spustiť G2 z aktualizovaného `main`.
+
+**Prezývka v G2 (rozhodnuté):** `zabezpecClena()` nikdy prezývku negeneruje.
+Ak chýba `Clen`, vráti `null` a používateľ skončí na `/registracia/prezyvka`,
+kde si ju zvolí sám. Žiadna dočasná prezývka nikdy nevznikne. Build po G2 = **42/42**.
 
 ---
 

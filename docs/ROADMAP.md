@@ -14,15 +14,17 @@ riziká, návrh commitu, ďalší krok — a čaká sa na schválenie.
 
 | Etapa | Názov | Stav | Blokované čím |
 | --- | --- | --- | --- |
-| A0 | Read-only inventúra repozitára | **IN PROGRESS** | prístup Claude Code k repu |
-| A | Analýza a dokumentácia | **IN PROGRESS** | dokončenie A0 |
-| A1 | Infraštruktúrna hygiena (Git ↔ Vercel, staging) | TODO | schválenie |
-| B | Návrh cieľovej architektúry | **ČAKÁ NA SCHVÁLENIE** | rozhodnutia D-01 až D-04 |
-| C | Základná štruktúra priečinkov a routes | TODO | schválenie B |
-| D | PWA shell | TODO | schválenie C, rozhodnutie D-06 |
-| E | Návrh Supabase databázy a RLS | TODO | rozhodnutia D-02, D-07 |
-| F | Pripojenie Supabase | TODO | existencia Supabase projektu |
-| G | Autentifikácia | TODO | dokončenie F |
+| A0 | Read-only inventúra repozitára | **DONE** | — |
+| A | Analýza a dokumentácia | **DONE** | — |
+| A1 | Infraštruktúrna hygiena (Git ↔ Vercel, staging) | **DONE** | — |
+| B | Návrh cieľovej architektúry | **DONE** | — |
+| C | Základná štruktúra priečinkov a routes | **DONE** | — |
+| D | PWA shell | **DONE** | — |
+| E | Návrh Supabase databázy a RLS | **DONE** (0025618) | — |
+| F | Pripojenie Supabase | **DONE** (b9eb39d) | — |
+| G1 | Autentifikácia — Supabase klienty | **DONE** (a1f1c45) | — |
+| G2 | Autentifikácia — registrácia, prihlásenie, obnova hesla, session | TODO | zadanie TASK_013 |
+| G3 | Autentifikácia — ochrana ciest na úrovni layoutov | TODO | dokončenie G2 |
 | H | Member funkcie | TODO | dokončenie G |
 | I | Admin rozhranie | TODO | dokončenie H |
 | J | Testovanie a dokumentácia | TODO | dokončenie I |
@@ -32,7 +34,7 @@ riziká, návrh commitu, ďalší krok — a čaká sa na schválenie.
 
 ## Etapa A0 — Read-only inventúra repozitára
 
-**Stav: IN PROGRESS**
+**Stav: DONE**
 
 Prečo existuje: Cowork nemal prístup k zdrojovému kódu. Bez skutočnej inventúry
 zostáva veľká časť `PROJECT_CONTEXT.md` na úrovni predpokladov.
@@ -55,7 +57,7 @@ zostáva veľká časť `PROJECT_CONTEXT.md` na úrovni predpokladov.
 
 ## Etapa A — Analýza a dokumentácia
 
-**Stav: IN PROGRESS**
+**Stav: DONE**
 
 Vytvorené: `PROJECT_CONTEXT.md`, `ARCHITECTURE_PROPOSAL.md`, `ROADMAP.md`,
 `DECISIONS.md`, `CURRENT_STATUS.md`, `SECURITY.md`, upravený `CLAUDE.md`,
@@ -72,7 +74,7 @@ Vytvorené: `PROJECT_CONTEXT.md`, `ARCHITECTURE_PROPOSAL.md`, `ROADMAP.md`,
 
 ## Etapa A1 — Infraštruktúrna hygiena
 
-**Stav: TODO** · Nová etapa, v pôvodnom zadaní chýbala.
+**Stav: DONE** · Nová etapa, v pôvodnom zadaní chýbala.
 
 Prečo existuje: podľa `TODO.md` **`git push` dnes nespúšťa Vercel deploy**
 (projekt vznikol priamym uploadom). Kým to platí, neexistuje auditovateľná
@@ -103,7 +105,7 @@ toho znamená pracovať naslepo.
 
 ## Etapa B — Návrh cieľovej architektúry
 
-**Stav: ČAKÁ NA SCHVÁLENIE**
+**Stav: DONE**
 
 Výstup: `ARCHITECTURE_PROPOSAL.md`. Žiadny kód.
 
@@ -119,7 +121,7 @@ Výstup: `ARCHITECTURE_PROPOSAL.md`. Žiadny kód.
 
 ## Etapa C — Základná štruktúra
 
-**Stav: TODO** · Prvá etapa, ktorá sa dotýka `src/`.
+**Stav: DONE** · Prvá etapa, ktorá sa dotýka `src/`.
 
 Obsah: vytvorenie prázdnych priečinkov a placeholder stránok podľa schválenej
 štruktúry. **Žiadna Supabase integrácia. Žiadna business logika. Žiadna DB.**
@@ -150,7 +152,7 @@ Stránky vracajú statický text „Pripravuje sa". Cieľom je overiť, že nov�
 
 ## Etapa D — PWA shell
 
-**Stav: TODO** · Blokované rozhodnutím D-06.
+**Stav: DONE**
 
 Obsah: `manifest.webmanifest`, ikony (192, 512, maskable), theme color,
 `<link rel="manifest">` v root layoute, prípadne minimálny service worker
@@ -173,7 +175,7 @@ ho už majú nainštalovaný. Preto je potrebný „kill switch" SW pripravený 
 
 ## Etapa E — Návrh databázy a RLS
 
-**Stav: TODO** · Blokované D-02 a D-07.
+**Stav: DONE** (commit 0025618)
 
 Obsah: **iba návrh na papieri.** Tabuľky, stĺpce, typy, PK, FK, unique
 constraints, indexy, status hodnoty, vzťahy, RLS policies. Žiadna migrácia sa
@@ -191,7 +193,7 @@ nespúšťa.
 
 ## Etapa F — Pripojenie Supabase
 
-**Stav: TODO** · Blokované: Supabase projekt zatiaľ nemusí existovať.
+**Stav: DONE** (commit b9eb39d)
 
 Predtým sa majiteľa opýtame na: názov projektu, región, staging/production režim,
 URL projektu, verejný anon/publishable key, spôsob systémových e-mailov, doménu.
@@ -200,20 +202,43 @@ URL projektu, verejný anon/publishable key, spôsob systémových e-mailov, dom
 
 **Kontrolný bod:**
 
-- [ ] Supabase projekt existuje a je zdokumentovaný (bez tajných hodnôt)
-- [ ] `.env.example` doplnený o nové kľúče, bez reálnych hodnôt
+- [x] Supabase projekt existuje a je zdokumentovaný (bez tajných hodnôt)
+- [x] `.env.example` doplnený o nové kľúče, bez reálnych hodnôt
 - [ ] migrácia prebehla najprv na **staging** databáze
 - [ ] záloha produkčnej DB vytvorená pred akýmkoľvek zásahom
-- [ ] `service_role` kľúč nikde v klientskom kóde ani v `NEXT_PUBLIC_*`
+- [x] `service_role` kľúč nikde v klientskom kóde ani v `NEXT_PUBLIC_*`
+
+> Neoverené / nesplnené — staging projekt neexistuje, viď D-11.
 
 ---
 
 ## Etapa G — Autentifikácia
 
-**Stav: TODO**
+Rozdelená na tri kroky: G1 hotový, G2 a G3 čakajú.
+
+### G1 — Supabase klienty
+
+**Stav: DONE** (commit a1f1c45)
+
+Obsah: balíky `@supabase/supabase-js` + `@supabase/ssr`, browser klient
+(`src/lib/supabase.ts`) a server klient (`src/lib/supabase-server.ts`),
+premenné `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+Zatiaľ ich nikto neimportuje — pripravené pre G2.
+
+**Kontrolný bod:**
+
+- [x] balíky nainštalované, počet zraniteľností nestúpol
+- [x] browser aj server klient vytvorené a kompilujú
+- [x] `service_role` nikde v kóde ani v `NEXT_PUBLIC_*`
+- [x] existujúce stránky fungujú nezmenené (build 40/40)
+
+### G2 — Registrácia, prihlásenie, obnova hesla, session v middleware
+
+**Stav: TODO** · zadanie `docs/CLAUDE_CODE_TASK_013.md`
 
 Obsah: registrácia, prihlásenie, potvrdenie e-mailu, reset hesla, session
-v middleware, `profiles` záznam pri registrácii, rola natvrdo `member`.
+v middleware, `Clen` záznam pri registrácii (`zabezpecClena`), rola natvrdo
+`CLEN`.
 
 **Kontrolný bod:**
 
@@ -221,9 +246,18 @@ v middleware, `profiles` záznam pri registrácii, rola natvrdo `member`.
 - [ ] reset hesla funguje end-to-end
 - [ ] duplicitný nickname je odmietnutý
 - [ ] rola sa nedá poslať z klienta
-- [ ] neprihlásený používateľ je z `/klub` presmerovaný
 - [ ] expirovaná session vedie na prihlásenie, nie na chybu 500
 - [ ] chybové hlášky neprezrádzajú, či e-mail v systéme existuje
+
+### G3 — Ochrana ciest na úrovni layoutov
+
+**Stav: TODO** · Blokované dokončením G2.
+
+Obsah: ochrana `/klub` a `/sprava` cez layouty, admin rola, odkaz v menu.
+
+**Kontrolný bod:**
+
+- [ ] neprihlásený používateľ je z `/klub` presmerovaný
 
 ---
 
