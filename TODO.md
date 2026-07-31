@@ -147,3 +147,6 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 - [ ] **Sentry projekt vytvorený:** `maxperformstudio / gladiator-gym` (DE región).
       Zapojenie `@sentry/nextjs` do aplikácie = samostatná etapa, vyžaduje
       `npm install`, čaká na schválenie.
+      **Poradie:** wizard sa spúšťa AŽ PO dokončení G2, na samostatnej vetve.
+      Mení `next.config.ts` a pridá 2 stránky — zmení očakávaný počet stránok
+      v builde, preto nesmie bežať súčasne s G2.

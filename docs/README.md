@@ -1,6 +1,6 @@
 # docs/ — dokumentácia projektu Gladiator Gym
 
-Posledná aktualizácia: 30. 7. 2026
+Posledná aktualizácia: 31. 7. 2026
 
 **Kde sme práve teraz → `CURRENT_STATUS.md`**
 
@@ -44,15 +44,22 @@ ktoré súbory sa zmenili, aké testy prešli, aké riziká zostali.
 | Etapa | Čo | Commit |
 | --- | --- | --- |
 | A0 | read-only audit repozitára | — |
-| A | dokumentácia | — |
+| A | dokumentácia | `45ff000` |
 | A1 | CI, Dependabot, ochrana `main` | `58c1687` |
-| C | kostra `/klub`, `/sprava`, prihlasovanie | `0343443` |
-| D | PWA manifest a ikony | `ec5bdd0` |
+| A2 | odstránenie zraniteľností Next.js | `3e6f5ef` |
+| C | kostra `/klub`, `/sprava`, prihlasovanie | `2b9cd3c` |
+| D | PWA manifest a ikony | `2b9cd3c` |
+| — | príručka obsluhy | `cf63bd6` |
+| E | schéma databázy | `0025618` |
+| F | prvá migrácia na staging | `b9eb39d` |
+| G1 | Supabase klienty | `a1f1c45` |
+| — | normalizácia line endings na LF | `b3212e7` (v PR #22) |
 
 ## Otvorené
 
-1. **12 high zraniteľností** v závislostiach — pred prihlasovaním
-2. Etapa E — úprava `prisma/schema.prisma` podľa `DATABASE.md`
-3. Etapa F — prvá migrácia na staging
-4. Etapa G — prihlasovanie
-5. Sentry, Vercel premenné, produkčný Supabase projekt — zapísané, neskôr
+1. **PR #22** (`chore/line-endings`) — čaká na merge
+2. **Etapa G2** — prihlasovanie (`docs/CLAUDE_CODE_TASK_013.md`), potom G3
+3. `overrides` pre `postcss`/`sharp` pod `next` + odstránenie `continue-on-error`
+   z jobu `audit` (keď bude 0 zraniteľností)
+4. Sentry v aplikácii, Vercel env premenné, produkčný Supabase projekt so zálohami — zapísané, neskôr
+5. právna kontrola podmienok a GDPR — paralelne
