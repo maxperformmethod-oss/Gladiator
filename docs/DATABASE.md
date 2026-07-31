@@ -1,6 +1,6 @@
 # DATABASE.md — návrh schémy PWA v1
 
-**Verzia 3.0 · Etapa E · NÁVRH — čaká na schválenie** · 2026-07-30
+**Verzia 4.0 · Etapa E** · 2026-07-31 · schéma schválená, SQL migrácie prečítané
 
 > Tento dokument nič nemení. Žiadny SQL sa nespustil, `prisma/schema.prisma`
 > zostáva nedotknutý. Toto je návrh na papieri podľa bodu 7 zadania.
@@ -389,6 +389,27 @@ mohli rozísť.
 
 Kontrola „dátum nie je v budúcnosti" sa v `CHECK` urobiť nedá (`now()` nie je
 immutable). Rieši ju serverová validácia.
+
+### Dôsledok pre aplikáciu — nezabudnúť v Etape H
+
+Obmedzenia `rekord_posudenie_uplne` a `vyzvazapis_posudenie_uplne` hovoria, že
+stav `CAKA` **nesmie** mať vyplneného posudzovateľa ani čas posúdenia.
+
+Keď teda člen po zamietnutí výsledok upraví a prihlási znova, serverová akcia
+musí v tom istom zápise **vynulovať tri stĺpce**:
+
+```
+stav              → CAKA
+posudilId         → null
+posudene          → null
+dovodZamietnutia  → null
+```
+
+Ak sa na to zabudne, databáza zápis odmietne. To je zámer — stav sa nesmie
+tváriť ako posúdený, keď posúdený nie je.
+
+Informácia o tom, kto predchádzajúcu verziu zamietol, zostáva v `AdminLog`,
+takže o históriu neprídeme.
 
 ## 4b. Rebríček — z čoho sa počíta
 
