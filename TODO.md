@@ -138,4 +138,12 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
       — verejné roly nemajú mať právo spúšťať tento trigger-helper.
 - [ ] Založiť **staging** Supabase projekt (rozhodnutie D-11, nesplnené) — dnes
       existuje jediný projekt `dhuynypsdbqdkkaqjxwv`, staging neexistuje.
-- [ ] **Vercel projekt neexistuje** — `CLAUDE.md` tvrdí „Deploy: Vercel", opraviť.
+- [ ] **Dva Vercel projekty na jednom repozitári:** živý pod účtom RPS-2022
+      (`gladiator-eight.vercel.app`) a mŕtva duplicita pod osobným účtom
+      `maximmalovec8-6717` (`gladiator-ruby.vercel.app`, posledný deploy ~18. 7.).
+      Duplicitu odpojiť od GitHubu alebo zmazať. Kanonický = RPS-2022.
+- [ ] **Vercel MCP konektor** je autorizovaný na osobný účet, nie na RPS-2022 —
+      preautorizovať.
+- [ ] **Sentry projekt vytvorený:** `maxperformstudio / gladiator-gym` (DE región).
+      Zapojenie `@sentry/nextjs` do aplikácie = samostatná etapa, vyžaduje
+      `npm install`, čaká na schválenie.
