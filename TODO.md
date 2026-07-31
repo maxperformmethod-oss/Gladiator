@@ -131,3 +131,11 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 - **Žiadny rate-limiting formulárov** — zvážiť pri reálnej prevádzke.
 - **Obsah v `lib/`** (gym.ts, pricing.ts) namiesto DB — presun do DB/CMS až
   v ďalšej fáze (tabuľky už existujú v `prisma/schema.prisma`).
+
+## 6. Etapa G+ — bezpečnosť a infraštruktúra (nesplnené)
+
+- [ ] `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated`
+      — verejné roly nemajú mať právo spúšťať tento trigger-helper.
+- [ ] Založiť **staging** Supabase projekt (rozhodnutie D-11, nesplnené) — dnes
+      existuje jediný projekt `dhuynypsdbqdkkaqjxwv`, staging neexistuje.
+- [ ] **Vercel projekt neexistuje** — `CLAUDE.md` tvrdí „Deploy: Vercel", opraviť.

@@ -35,7 +35,7 @@ sekcie 2 a 6, a toto zadanie. **Nerob audit repozitára, nerekonštruuj históri
 - necommituj a nepushuj bez schválenia
 
 ```
-git checkout main && git pull        → a1f1c45
+git checkout main && git pull        → základ potvrdí Maxim
 git checkout -b feat/auth-flow
 ```
 
