@@ -11,6 +11,7 @@ Posledná aktualizácia: 30. 7. 2026
 | Súbor | Na čo je | Kedy ho otvoriť |
 | --- | --- | --- |
 | **`CURRENT_STATUS.md`** | čo je hotové, čo beží, čo je ďalej | **keď stratíš prehľad — začni tu** |
+| **`PREVADZKA.md`** | ako projekt ovládať — Vercel, CI, Supabase, Git, čo robiť pri chybe | **keď niečo nefunguje alebo si niečím neistý** |
 | `ROADMAP.md` | etapy A až K, podmienky dokončenia každej | keď chceš vidieť celú cestu |
 | `DECISIONS.md` | všetky rozhodnutia a ich dôvody | keď sa pýtaš „prečo sme to spravili takto" |
 | `ARCHITECTURE_PROPOSAL.md` | tri vrstvy, priečinky, routes, dátové toky | pri práci na štruktúre kódu |
