@@ -13,7 +13,7 @@ Tento súbor je záväzný pre **každý nový chat**. Keď otváraš nové okno
 | --- | --- | --- |
 | **Maxim** | rozhoduje, schvaľuje, merguje, nastavuje účty a kľúče | nepíše kód |
 | **Cowork** (tento chat) | navrhuje, kontroluje, píše dokumentáciu a zadania pre Claude Code, číta konektory | nemerguje, nespúšťa migrácie |
-| **Claude Code** (VS Code) | vykonáva schválené zmeny v kóde, reportuje | nerozhoduje o rozsahu, nemerguje |
+| **Claude Code** (VS Code) | vykonáva schválené zmeny v kóde, reportuje, **merguje PR, ktorých diff neobsahuje `src/`** | nerozhoduje o rozsahu, **nemerguje PR so zmenou v `src/`** — tie merguje Maxim ručne |
 
 **Git commity sú záväzná história — čo nie je v commite, nestalo sa.**
 
