@@ -122,23 +122,38 @@ model Cennik {
   pobocka   Pobocka? @relation(fields: [pobockaId], references: [id])
 }
 
-// Pripravené pre budúce členské účty — Fáza 1 nezapisuje.
+// Členský účet — rozšírený pre PWA v1 (auth, rebríček, výzvy, audit).
+// email/authUserId/prezyvkaNorm sú tri nezávislé unikátne stĺpce.
 model Clen {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  meno      String?
-  telefon   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  authUserId   String?  @unique @db.Uuid // väzba na auth.users.id (bez Prisma relácie)
+  email        String?  @unique // zdroj pravdy je auth.users; tu voliteľne
+  prezyvka     String? // zobrazovaná podoba, napr. "Gladiator"
+  prezyvkaNorm String?  @unique // malé písmená bez diakritiky — nastavuje server
+  rola         Rola     @default(CLEN)
+  aktivny      Boolean  @default(true)
+  meno         String?
+  telefon      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   pobockaId  String?
-  pobocka    Pobocka?     @relation(fields: [pobockaId], references: [id])
+  pobocka    Pobocka?     @relation(fields: [pobockaId], references: [id], onDelete: SetNull)
   objednavky Objednavka[]
 
   // Fáza 2 — členský QR systém (tabuľky ostávajú prázdne do Fázy 2)
   permanentky Permanentka[]
   qrTokeny    QRToken[]
   vstupy      VstupHistoria[]
+
+  // PWA v1 — osobné rekordy, zápisy do výziev a audit stopa
+  rekordy         Rekord[]     @relation("RekordyClena")
+  posudeneRekordy Rekord[]     @relation("PosudeneRekordy")
+  zapisy          VyzvaZapis[] @relation("ZapisyClena")
+  posudeneZapisy  VyzvaZapis[] @relation("PosudeneZapisy")
+  adminLogy       AdminLog[]
+
+  @@index([rola, aktivny])
 }
 
 model Objednavka {
@@ -163,7 +178,7 @@ model Objednavka {
 
   // TODO Fáza 2: po stave PAID vytvoriť/predĺžiť Permanentku pre priradeného Clen
   clenId String?
-  clen   Clen?   @relation(fields: [clenId], references: [id])
+  clen   Clen?   @relation(fields: [clenId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -183,7 +198,7 @@ model Permanentka {
   createdAt  DateTime        @default(now())
 
   clenId    String
-  clen      Clen    @relation(fields: [clenId], references: [id])
+  clen      Clen    @relation(fields: [clenId], references: [id], onDelete: Cascade)
   pobockaId String
   pobocka   Pobocka @relation(fields: [pobockaId], references: [id])
 
@@ -199,7 +214,7 @@ model QRToken {
   pouzity     Boolean  @default(false)
 
   clenId String
-  clen   Clen   @relation(fields: [clenId], references: [id])
+  clen   Clen   @relation(fields: [clenId], references: [id], onDelete: Cascade)
 
   @@index([clenId, pouzity])
 }
@@ -212,7 +227,7 @@ model VstupHistoria {
   uspesny  Boolean
 
   clenId    String
-  clen      Clen    @relation(fields: [clenId], references: [id])
+  clen      Clen    @relation(fields: [clenId], references: [id], onDelete: Cascade)
   pobockaId String
   pobocka   Pobocka @relation(fields: [pobockaId], references: [id])
 
@@ -234,4 +249,128 @@ model Dopyt {
   createdAt        DateTime @default(now())
 
   @@index([typ, vybaveny, createdAt])
+}
+
+// ══ PWA v1 — členská zóna (rebríček, výzvy, audit) ═══════════════════════
+
+enum Rola {
+  CLEN
+  ADMIN
+}
+
+enum Jednotka {
+  KG
+  OPAKOVANIA
+  SEKUNDY
+}
+
+enum VyzvaStav {
+  NAVRH
+  AKTIVNA
+  UZAVRETA
+}
+
+enum VysledokStav {
+  SUKROMNY
+  CAKA
+  SCHVALENE
+  ZAMIETNUTE
+}
+
+// Cvik — merateľný cvik do rebríčka/výzvy; jednotka určuje zobrazenie a porovnanie.
+model Cvik {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nazov     String
+  popis     String?
+  jednotka  Jednotka
+  aktivny   Boolean  @default(true)
+  poradie   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rekordy Rekord[]
+  vyzvy   Vyzva[]
+
+  @@index([aktivny, poradie])
+}
+
+// Rekord — osobný rekord člena v cviku; SUKROMNY kým ho člen sám neprihlási do rebríčka.
+model Rekord {
+  id               String       @id @default(cuid())
+  clenId           String
+  cvikId           String
+  hodnota          Decimal      @db.Decimal(8, 2)
+  dosiahnute       DateTime     @db.Date
+  poznamka         String?
+  stav             VysledokStav @default(SUKROMNY)
+  posudilId        String?
+  posudene         DateTime?
+  dovodZamietnutia String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  clen    Clen  @relation("RekordyClena", fields: [clenId], references: [id], onDelete: Cascade)
+  cvik    Cvik  @relation(fields: [cvikId], references: [id], onDelete: Restrict)
+  posudil Clen? @relation("PosudeneRekordy", fields: [posudilId], references: [id], onDelete: SetNull)
+
+  @@index([clenId, cvikId, dosiahnute])
+  @@index([cvikId, stav, hodnota])
+}
+
+// Vyzva — časovo ohraničená súťaž v jednom cviku (jedna aktívna rieši aplikácia, nie DB).
+model Vyzva {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  nazov     String
+  popis     String?
+  cvikId    String
+  zaciatok  DateTime  @db.Date
+  koniec    DateTime  @db.Date
+  stav      VyzvaStav @default(NAVRH)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  cvik   Cvik         @relation(fields: [cvikId], references: [id], onDelete: Restrict)
+  zapisy VyzvaZapis[]
+
+  @@index([stav, zaciatok])
+}
+
+// VyzvaZapis — zápis člena do výzvy; jeden na člena a výzvu (vynútené DB).
+model VyzvaZapis {
+  id               String       @id @default(cuid())
+  vyzvaId          String
+  clenId           String
+  hodnota          Decimal      @db.Decimal(8, 2)
+  stav             VysledokStav @default(CAKA)
+  posudilId        String?
+  posudene         DateTime?
+  dovodZamietnutia String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  vyzva   Vyzva @relation(fields: [vyzvaId], references: [id], onDelete: Cascade)
+  clen    Clen  @relation("ZapisyClena", fields: [clenId], references: [id], onDelete: Cascade)
+  posudil Clen? @relation("PosudeneZapisy", fields: [posudilId], references: [id], onDelete: SetNull)
+
+  @@unique([vyzvaId, clenId])
+  @@index([vyzvaId, stav, hodnota])
+}
+
+// AdminLog — audit stopa admin akcií; iba zápis, prezývka uložená ako snapshot (prežije výmaz účtu).
+model AdminLog {
+  id            String   @id @default(cuid())
+  aktorId       String?
+  aktorPrezyvka String
+  akcia         String
+  cielTyp       String
+  cielId        String?
+  detail        Json?
+  createdAt     DateTime @default(now())
+
+  aktor Clen? @relation(fields: [aktorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([aktorId, createdAt])
 }
