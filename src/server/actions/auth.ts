@@ -32,8 +32,17 @@ export async function registruj(_prev: AuthState, formData: FormData): Promise<A
   const obsadena = await prisma.clen.findUnique({ where: { prezyvkaNorm: prezyvka.prezyvkaNorm } })
   if (obsadena) return { error: CHYBA_PREZYVKA_OBSADENA }
 
+  const h = await headers()
+  const host = h.get('host')
+  const proto = h.get('x-forwarded-proto') ?? 'http'
+  const emailRedirectTo = host ? `${proto}://${host}/api/auth/callback` : undefined
+
   const supabase = await createSupabaseServerClient()
-  const { data, error } = await supabase.auth.signUp({ email, password: heslo })
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password: heslo,
+    options: { emailRedirectTo },
+  })
   if (error) return { error: CHYBA_VSEOBECNA }
 
   // Supabase pri existujúcom e-maile vráti používateľa s prázdnym `identities`
