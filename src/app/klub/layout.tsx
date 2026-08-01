@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+import { requireClen } from '@/server/auth'
 
-// Rozpracovaná členská sekcia — nesmie skončiť vo vyhľadávačoch.
-// Žiadny guard/kontrola prihlásenia — tá príde v Etape G.
+// Členská sekcia — prístup len pre prihlásených členov, mimo vyhľadávačov.
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function KlubLayout({ children }: { children: ReactNode }) {
+export default async function KlubLayout({ children }: { children: ReactNode }) {
+  // Neprihlásený → /prihlasenie · bez Clen → /registracia/prezyvka · neaktívny → /prihlasenie.
+  await requireClen()
   return <>{children}</>
 }

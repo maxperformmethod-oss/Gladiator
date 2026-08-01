@@ -7,7 +7,18 @@ import { Menu, X } from 'lucide-react'
 import { BRAND, KONTAKT, NAV } from '@/lib/gym'
 import { cn } from '@/lib/cn'
 
-export function Header() {
+/**
+ * Prihlasovací stav dostáva Header ako prop z root layoutu (server) — v hlavičke
+ * sa NErobí klientsky Supabase dotaz. Podľa stavu pribudne položka navigácie:
+ * hosť → „Prihlásenie" · člen → „Klub" · admin → „Klub" + „Správa".
+ */
+export function Header({
+  prihlaseny = false,
+  admin = false,
+}: {
+  prihlaseny?: boolean
+  admin?: boolean
+}) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
@@ -26,6 +37,13 @@ export function Header() {
 
   const navItems = NAV.filter((item) => item.href !== '/')
 
+  const authItems: { href: string; label: string }[] = prihlaseny
+    ? [
+        { href: '/klub', label: 'Klub' },
+        ...(admin ? [{ href: '/sprava', label: 'Správa' }] : []),
+      ]
+    : [{ href: '/prihlasenie', label: 'Prihlásenie' }]
+
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
@@ -40,7 +58,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-5 lg:flex" aria-label="Hlavná navigácia">
-          {navItems.map((item) => (
+          {[...navItems, ...authItems].map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -86,7 +104,7 @@ export function Header() {
             className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-6"
             aria-label="Mobilná navigácia"
           >
-            {NAV.map((item) => (
+            {[...NAV, ...authItems].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
