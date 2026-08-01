@@ -291,18 +291,14 @@ Spracuje odkaz z potvrdzovacieho e-mailu:
 
 Pri chybe presmeruj na `/prihlasenie` s neutrálnou chybovou správou.
 
-## C5. **Nastavenie v Supabase — spraví MAXIM, nie ty**
+## C5. Nastavenie v Supabase — ✅ SPLNENÉ 31. 7. 2026 (Maxim)
 
-Napíš mi do reportu, že toto treba spraviť, a **zastav**:
+Supabase → **Authentication → URL Configuration** (G2 beží LEN cez localhost;
+adresa Vercel Preview sa doplní až v G3):
 
-Supabase → **Authentication → URL Configuration**:
-
-- Site URL: `http://localhost:3000` pre vývoj
-- Redirect URLs: pridať `http://localhost:3000/api/auth/callback`
-  a adresu Vercel Preview
-- **Authentication → Providers → Email**: potvrdenie e-mailu **zapnuté**
-
-Bez toho registrácia neprejde. Ja to nastavím.
+- ✅ Site URL: `http://localhost:3000`
+- ✅ Redirect URLs: `http://localhost:3000/api/auth/callback`
+- ✅ **Authentication → Providers → Email**: potvrdenie e-mailu zapnuté
 
 **ZASTAV po Časti C.**
 
@@ -331,7 +327,9 @@ git status --short
 git diff --stat
 ```
 
-- [ ] build **40/40 + 2 nové stránky** (`/registracia/hotovo`, `/registracia/prezyvka`) = 42/42
+- [ ] build **43/43** — základ 40 + `/registracia/hotovo`, `/registracia/prezyvka`
+      a route handler `/api/auth/callback` (ten sa do tally „Generating static
+      pages" ráta, preto 43 a nie 42)
 - [ ] `git diff` neobsahuje `layout.tsx`, `globals.css`, `gym.ts`,
       `pricing.ts`, `prisma/`
 - [ ] `/admin/objednavky` stále pýta heslo
