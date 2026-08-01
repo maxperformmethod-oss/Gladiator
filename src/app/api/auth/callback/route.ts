@@ -14,12 +14,14 @@ export async function GET(req: NextRequest) {
   const next = bezpecnyNext(searchParams.get('next'))
 
   if (!code) {
+    console.error('[auth/callback] chýbajúci code v URL')
     return NextResponse.redirect(new URL('/prihlasenie', origin))
   }
 
   const supabase = await createSupabaseServerClient()
   const { error } = await supabase.auth.exchangeCodeForSession(code)
   if (error) {
+    console.error(`[auth/callback] exchangeCodeForSession zlyhalo: ${error.message}`)
     return NextResponse.redirect(new URL('/prihlasenie', origin))
   }
 
@@ -30,6 +32,7 @@ export async function GET(req: NextRequest) {
 
   const clen = await zabezpecClena()
   if (!clen) {
+    console.error('[auth/callback] session bez záznamu Clen — presmerované na /registracia/prezyvka')
     return NextResponse.redirect(new URL('/registracia/prezyvka', origin))
   }
 
