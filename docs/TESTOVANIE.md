@@ -1,6 +1,52 @@
 # TESTOVANIE.md — ručný testovací scenár
 
-Verzia 1.0 · 31. 7. 2026 · pokrýva Etapu G2
+Verzia 1.1 · 1. 8. 2026 · pokrýva Etapu G2
+
+---
+
+## Výsledky behu 1. 8. 2026 · vetva `fix/signup-redirect` @ `4c0bb66`
+
+Prešiel Cowork cez prehliadač + Supabase. **Žiadna bezpečnostná chyba.**
+
+| # | Test | Výsledok |
+| --- | --- | --- |
+| 1 | Prezývka `admin` odmietnutá | ✅ |
+| 1 | Registrácia → `/registracia/hotovo` | ✅ |
+| 1 | `auth.users` riadok, e-mail **nepotvrdený** | ✅ |
+| 1 | `Clen`: `Testovač` → `prezyvkaNorm = testovac`, `rola = CLEN`, `aktivny = true` | ✅ |
+| 3 | Zlé heslo → „Nesprávny e-mail alebo heslo." | ✅ |
+| 3 | **Neexistujúci e-mail → tá istá veta, znak po znaku** | ✅ |
+| 4 | Registrácia s **existujúcim e-mailom** → `/registracia/hotovo`, žiadny druhý `Clen` | ✅ |
+| 4 | `TESTOVAC` proti `Testovač` → „Túto prezývku už niekto používa." | ✅ |
+| 7 | `/admin/objednavky` neprístupné bez hesla | ✅ |
+| 7 | `/`, `/cennik`, `/klub`, `/sprava` fungujú | ✅ |
+| 2 | **Potvrdzovací e-mail → `/klub`, prihlásený** | ✅ `last_sign_in_at` 09:57:46 |
+| 5 | Obnova hesla | ✅ prešla |
+| 6 | Voľba prezývky pri chýbajúcom `Clen` | ⬜ neotestované |
+
+**Záver: Etapa G2 je overená end-to-end.** Registrácia → e-mail → callback →
+session → `/klub` → záznam `Clen` (`testovac2`, `rola = CLEN`, `aktivny = true`).
+
+### E-maily — vyriešené 1. 8. 2026
+
+Vstavaný mailer Supabase (2 e-maily/hod) nestačil. Prešli sme na **Resend**
+cez custom SMTP, limit zdvihnutý na 30/hod.
+
+**Obmedzenie, kým nemáme overenú doménu:** odosielateľ `onboarding@resend.dev`
+doručuje **len na `maxperformmethod@gmail.com`** — adresu, ktorou je Resend
+účet registrovaný. Testovacie účty preto zakladaj na túto adresu.
+Overenie domény `gladiatorgym.sk` je v `TODO.md`, rieši sa pred spustením.
+
+### Nálezy — žiadny nie je bezpečnostný
+
+| # | Nález | Závažnosť |
+| --- | --- | --- |
+| **A** | Na `/prihlasenie` **nie je odkaz na obnovu hesla**. Stránka `/obnova-hesla` existuje, ale používateľ sa k nej nedostane. | **vysoká** |
+| **B** | Nepotvrdený e-mail + správne heslo → „Nesprávny e-mail alebo heslo." Bezpečnostne správne, ale používateľ uviazne — myslí si, že si pomýlil heslo. Riešenie: trvalá poznámka na stránke (nie podmienená), napr. „Ak si sa práve zaregistroval, najprv potvrď e-mail." Nič neprezradí, lebo sa zobrazuje vždy. | **vysoká** |
+| **C** | Zakázaná prezývka `admin` vráti „Skontroluj e-mail, heslo (aspoň 10 znakov) a prezývku (3–20 znakov)." — `admin` má 5 znakov, používateľ chybu nepochopí. | stredná |
+| **D** | Po chybe sa **vymažú všetky polia** vrátane e-mailu a hesla. | stredná |
+
+---
 
 Tento súbor rastie s projektom. Každá etapa doplní vlastnú sekciu.
 Prejdi ho celý vždy, keď mergneš niečo, čo sa dotýka prihlasovania.
@@ -14,9 +60,12 @@ To nie je chyba, je to rozhodnutie.
 ## Príprava
 
 ```
-git checkout main && git pull
+git checkout <vetva s testovanou zmenou> && git pull
 npm run dev
 ```
+
+**Testuje sa vetva z PR, nie `main`.** Zmysel testu je zachytiť chybu
+**pred** mergnutím. Po mergnutí je už neskoro.
 
 Otvor si v druhom okne Supabase dashboard, projekt **Gladiator gym**:
 
@@ -38,10 +87,10 @@ Použi reálnu e-mailovú adresu, na ktorú sa vieš dostať.
 | Krok | Očakávané |
 | --- | --- |
 | Otvor `/registracia` | formulár: e-mail, heslo, prezývka |
-| Heslo kratšie než 10 znakov | zrozumiteľná chyba, formulár sa neodošle |
-| Prezývka `admin` | odmietnutá (zakázaný zoznam) |
-| Prezývka `ab` | odmietnutá (min. 3 znaky) |
-| Platné údaje | presmerovanie na `/registracia/hotovo` — „Skontroluj si e-mail" |
+| Heslo kratšie než 10 znakov | zablokuje prehliadač (`minLength`), formulár sa neodošle |
+| Prezývka `admin` | odmietnutá — server vracia **jednu spoločnú vetu** „Skontroluj e-mail, heslo (aspoň 10 znakov) a prezývku (3–20 znakov)." |
+| Prezývka `ab` | odmietnutá, tá istá veta |
+| Platné údaje | presmerovanie na `/registracia/hotovo`, nadpis „Skontroluj si e-mail" |
 
 **Over v Supabase:**
 
@@ -78,7 +127,7 @@ registrovaný. To je únik údajov, nie kozmetika.
 
 | Krok | Očakávané |
 | --- | --- |
-| Registruj sa znova s **tým istým e-mailom** | „Skontroluj si e-mail." — rovnako ako pri úspechu, žiadne „účet už existuje" |
+| Registruj sa znova s **tým istým e-mailom** | presmerovanie na `/registracia/hotovo` — rovnako ako pri úspechu, žiadne „účet už existuje" |
 | Registruj sa s **tou istou prezývkou**, iný e-mail | odmietnuté, zrozumiteľná chyba |
 | Prezývka s diakritikou, ktorá sa po normalizácii zhoduje (napr. `Žéňo` vs `zeno`) | odmietnutá |
 

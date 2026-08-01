@@ -69,3 +69,5 @@ dostaneš, `main` sa posunie. Píš „základ potvrdí Maxim".
 | Vercel `list_projects` vrátil prázdno, hoci projekt existoval | **Prázdny výsledok z konektora nie je dôkaz neexistencie.** Over druhým dotazom. |
 | Dokumentácia tvrdila iný stav než commity | **Po každej etape aktualizuj `CURRENT_STATUS.md` a `ROADMAP.md`.** |
 | CRLF churn zahltil diffy 8935 riadkami šumu | **Diff musí byť čitateľný, inak sa kontrola nedá spraviť.** |
+| PR #24 sa zmergoval do `main` skôr, než na jeho vetvu pristála oprava z #25 — `main` dostal starú verziu | **Žiadne stacked PR.** Každá vetva vychádza z aktuálneho `main`, každá PR mieri do `main`. |
+| Cowork upravil `TESTOVANIE.md` na disku, zmena zostala necommitnutá a zablokovala prepnutie vetvy | **Po každej editácii súboru Coworkom nasleduje commit — pred akoukoľvek git operáciou.** Cowork na konci odpovede vymenuje súbory, ktorých sa dotkol. |
