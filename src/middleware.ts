@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
 /**
  * HTTP Basic Auth pre interné stránky /admin/* (prehľad objednávok pre
  * recepciu). Jednoduchá ochrana heslom z env — žiadny plnohodnotný auth
  * systém (ten príde v neskoršej fáze s členskými účtami).
+ *
+ * G2: ostatné cesty (/klub, /sprava) len obnovia Supabase session a pustia
+ * ďalej — middleware v tejto etape NIKOHO nepresmerúva (ochrana až G3).
  */
 export function middleware(req: NextRequest) {
+  // Ostatné cesty (/klub, /sprava) → obnova Supabase session, potom next().
+  // /admin/* pokračuje NEZMENENOU Basic Auth vetvou nižšie.
+  if (!req.nextUrl.pathname.startsWith('/admin')) {
+    return obnovSession(req)
+  }
+
   const user = process.env.ADMIN_USER
   const password = process.env.ADMIN_PASSWORD
 
@@ -46,6 +56,38 @@ Nastav ich vo Vercel dashboarde (Settings → Environment Variables) alebo v <co
   })
 }
 
+/**
+ * Obnova Supabase session podľa @supabase/ssr v0.12: getAll nad
+ * request.cookies, setAll nad response.cookies, potom auth.getUser().
+ * NIKOHO nepresmerúva — iba udrží session čerstvú pre serverové komponenty.
+ */
+async function obnovSession(req: NextRequest) {
+  let response = NextResponse.next({ request: req })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value))
+          response = NextResponse.next({ request: req })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  await supabase.auth.getUser()
+
+  return response
+}
+
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/klub/:path*', '/sprava/:path*'],
 }

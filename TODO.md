@@ -150,3 +150,10 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
       **Poradie:** wizard sa spúšťa AŽ PO dokončení G2, na samostatnej vetve.
       Mení `next.config.ts` a pridá 2 stránky — zmení očakávaný počet stránok
       v builde, preto nesmie bežať súčasne s G2.
+- [ ] **Supabase Redirect URLs — pred produkčným spustením doplniť produkčnú
+      adresu callbacku.** `redirectTo` (registrácia aj obnova hesla) sa skladá
+      z hlavičiek requestu (`Host`), takže allowlist Redirect URLs je **jediná
+      ochrana proti podvrhnutej `Host` hlavičke**. Pridať úzky vzor len na cestu
+      `…/api/auth/callback**` — **nie** široký wildcard typu `https://domena/**`.
+- [ ] **Supabase Site URL** je teraz `http://localhost:3000` (G2 = len lokálne)
+      — pred produkčným spustením prepnúť na produkčnú adresu.
