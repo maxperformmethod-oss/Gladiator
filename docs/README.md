@@ -12,6 +12,7 @@ Posledná aktualizácia: 31. 7. 2026
 | --- | --- | --- |
 | **`CURRENT_STATUS.md`** | čo je hotové, čo beží, čo je ďalej | **keď stratíš prehľad — začni tu** |
 | **`PREVADZKA.md`** | ako projekt ovládať — Vercel, CI, Supabase, Git, čo robiť pri chybe | **keď niečo nefunguje alebo si niečím neistý** |
+| `TESTOVANIE.md` | ručný testovací scenár, rastie s etapami | pred každým mergnutím do main |
 | `SPOLUPRACA.md` | pravidlá spolupráce, role, formát zadaní | na začiatku každého nového chatu |
 | `SKOLA.md` | učebný plán obsluhy projektu pre Maxima | keď sa chceš naučiť projekt ovládať sám |
 | `ROADMAP.md` | etapy A až K, podmienky dokončenia každej | keď chceš vidieť celú cestu |
