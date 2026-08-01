@@ -5,10 +5,10 @@ import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { zabezpecClena } from '@/server/auth'
-import { isEmail, reqString, validujPrezyvku } from '@/lib/validate'
+import { isEmail, jeRezervovanaPrezyvka, reqString, validujPrezyvku } from '@/lib/validate'
 
 /** Stav formulára pre `useActionState`: prázdny objekt = zatiaľ bez odozvy. */
-export type AuthState = { error?: string; message?: string }
+export type AuthState = { error?: string; message?: string; values?: Record<string, string> }
 
 // Bezpečnostné pravidlo (C2): chyby neprezradia, či e-mail v systéme existuje.
 const CHYBA_PRIHLASENIE = 'Nesprávny e-mail alebo heslo.'
@@ -21,16 +21,31 @@ const CHYBA_PREZYVKA_OBSADENA = 'Túto prezývku už niekto používa. Vyber si 
  * „skontroluj si e-mail") — útočník sa nedozvie, kto je registrovaný.
  */
 export async function registruj(_prev: AuthState, formData: FormData): Promise<AuthState> {
-  const email = reqString(formData.get('email'), 200)
+  const emailRaw = formData.get('email')
+  const prezyvkaRaw = formData.get('prezyvka')
+  const email = reqString(emailRaw, 200)
   const heslo = formData.get('password')
-  const prezyvka = validujPrezyvku(formData.get('prezyvka'))
+  const prezyvka = validujPrezyvku(prezyvkaRaw)
 
-  if (!email || !isEmail(email) || typeof heslo !== 'string' || heslo.length < 10 || heslo.length > 200 || !prezyvka) {
-    return { error: 'Skontroluj e-mail, heslo (aspoň 10 znakov) a prezývku (3–20 znakov).' }
+  // B4: po chybe ponecháme e-mail a prezývku (heslo nikdy).
+  const values = {
+    email: typeof emailRaw === 'string' ? emailRaw : '',
+    prezyvka: typeof prezyvkaRaw === 'string' ? prezyvkaRaw : '',
+  }
+
+  if (!email || !isEmail(email) || typeof heslo !== 'string' || heslo.length < 10 || heslo.length > 200) {
+    return { error: 'Skontroluj e-mail, heslo (aspoň 10 znakov) a prezývku (3–20 znakov).', values }
+  }
+  if (!prezyvka) {
+    // B3: zakázaná prezývka má vlastnú vetu; ostatné chyby prezývky spoločnú.
+    if (jeRezervovanaPrezyvka(prezyvkaRaw)) {
+      return { error: 'Túto prezývku nemôžeš použiť. Vyber si inú.', values }
+    }
+    return { error: 'Skontroluj e-mail, heslo (aspoň 10 znakov) a prezývku (3–20 znakov).', values }
   }
 
   const obsadena = await prisma.clen.findUnique({ where: { prezyvkaNorm: prezyvka.prezyvkaNorm } })
-  if (obsadena) return { error: CHYBA_PREZYVKA_OBSADENA }
+  if (obsadena) return { error: CHYBA_PREZYVKA_OBSADENA, values }
 
   const h = await headers()
   const host = h.get('host')
@@ -72,23 +87,25 @@ export async function registruj(_prev: AuthState, formData: FormData): Promise<A
  * ak chýba prezývka, presmeruje na jej doplnenie. Neaktívneho člena odhlási.
  */
 export async function prihlas(_prev: AuthState, formData: FormData): Promise<AuthState> {
-  const email = reqString(formData.get('email'), 200)
+  const emailRaw = formData.get('email')
+  const email = reqString(emailRaw, 200)
   const heslo = formData.get('password')
+  const values = { email: typeof emailRaw === 'string' ? emailRaw : '' } // B4
 
   if (!email || !isEmail(email) || typeof heslo !== 'string' || !heslo) {
-    return { error: CHYBA_PRIHLASENIE }
+    return { error: CHYBA_PRIHLASENIE, values }
   }
 
   const supabase = await createSupabaseServerClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password: heslo })
-  if (error) return { error: CHYBA_PRIHLASENIE }
+  if (error) return { error: CHYBA_PRIHLASENIE, values }
 
   const clen = await zabezpecClena()
   if (!clen) redirect('/registracia/prezyvka')
 
   if (!clen.aktivny) {
     await supabase.auth.signOut()
-    return { error: 'Tvoje konto je momentálne pozastavené. Ozvi sa nám na recepcii.' }
+    return { error: 'Tvoje konto je momentálne pozastavené. Ozvi sa nám na recepcii.', values }
   }
 
   redirect('/klub')

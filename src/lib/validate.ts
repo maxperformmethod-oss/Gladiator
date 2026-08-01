@@ -88,3 +88,8 @@ export function validujPrezyvku(
   if (REZERVOVANE_PREZYVKY.includes(prezyvkaNorm)) return null
   return { prezyvka, prezyvkaNorm }
 }
+
+/** True, ak (znormalizovaná) prezývka patrí na zakázaný zoznam. */
+export function jeRezervovanaPrezyvka(value: unknown): boolean {
+  return typeof value === 'string' && REZERVOVANE_PREZYVKY.includes(normalizujPrezyvku(value))
+}
