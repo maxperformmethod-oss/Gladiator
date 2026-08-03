@@ -8,17 +8,11 @@ import { BRAND, KONTAKT, NAV } from '@/lib/gym'
 import { cn } from '@/lib/cn'
 
 /**
- * Prihlasovací stav dostáva Header ako prop z root layoutu (server) — v hlavičke
- * sa NErobí klientsky Supabase dotaz. Podľa stavu pribudne položka navigácie:
- * hosť → „Prihlásenie" · člen → „Klub" · admin → „Klub" + „Správa".
+ * „Klub" ukazujeme všetkým rovnako — hlavička nerobí žiadny server dotaz, aby
+ * verejné stránky ostali staticky renderované. Neprihláseného /klub aj tak
+ * presmeruje na /prihlasenie; odkaz „Správa" (len admin) je na stránke /klub.
  */
-export function Header({
-  prihlaseny = false,
-  admin = false,
-}: {
-  prihlaseny?: boolean
-  admin?: boolean
-}) {
+export function Header() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
@@ -37,12 +31,8 @@ export function Header({
 
   const navItems = NAV.filter((item) => item.href !== '/')
 
-  const authItems: { href: string; label: string }[] = prihlaseny
-    ? [
-        { href: '/klub', label: 'Klub' },
-        ...(admin ? [{ href: '/sprava', label: 'Správa' }] : []),
-      ]
-    : [{ href: '/prihlasenie', label: 'Prihlásenie' }]
+  // Rovnaká položka pre všetkých — žiadne čítanie roly v hlavičke.
+  const authItems = [{ href: '/klub', label: 'Klub' }]
 
   return (
     <>

@@ -1,6 +1,6 @@
 # TESTOVANIE.md — ručný testovací scenár
 
-Verzia 1.1 · 1. 8. 2026 · pokrýva Etapu G2
+Verzia 1.2 · 1. 8. 2026 · pokrýva Etapy G2 a G3
 
 ---
 
@@ -174,6 +174,42 @@ stop a hlás to.**
 
 ---
 
+## G3 — scenár
+
+Ochrana ciest cez layouty (`requireClen` / `requireAdmin`). `middleware.ts` sa
+v G3 **nemenil** — chráni len `/admin/objednavky` ako predtým.
+
+**Nastavenie roly na test:** v Supabase otvor **SQL Editor** a spusti:
+
+```sql
+update public."Clen" set "rola"='ADMIN' where email='maxperformmethod@gmail.com';
+```
+
+**Nepoužívaj Table Editor** — ak po prepísaní bunky klikneš mimo nej bez
+potvrdenia (Enter/✓), zmenu **ticho zahodí** a rola ostane `CLEN`.
+**Po teste rolu vráť na `CLEN`** (ten istý príkaz s `'CLEN'`).
+
+Tabuľka A5 (`npm run dev`, testuj v tomto poradí):
+
+| # | Stav | Cesta | Očakávané |
+| --- | --- | --- | --- |
+| 1 | odhlásený | `/klub` | presmerovanie na `/prihlasenie` |
+| 2 | odhlásený | `/sprava` | **404**, nie presmerovanie |
+| 3 | prihlásený člen | `/klub` | zobrazí sa (+ tlačidlo „Odhlásiť sa") |
+| 4 | prihlásený člen (rola `CLEN`) | `/sprava` | **404** |
+| 5 | prihlásený člen | `/klub` → „Odhlásiť sa" | ide na `/`, potom `/klub` presmeruje |
+| 6 | ktokoľvek | `/`, `/cennik` | bez zmeny, staticky renderované |
+| 7 | ktokoľvek | `/admin/objednavky` | **stále pýta heslo** (Basic Auth) |
+
+Admin (po nastavení roly `ADMIN`) vidí na `/klub` odkaz „Správa" → `/sprava`,
+a `/sprava` sa mu zobrazí. Hlavička ukazuje „Klub" pre všetkých rovnako
+(žiadny server dotaz — verejné stránky preto ostávajú statické).
+
+> **Neoverené:** „expirovaná session vedie na `/prihlasenie`, nie na 500" sme
+> zatiaľ netestovali.
+
+---
+
 ## Po teste
 
 Zmaž testovací účet z **oboch** miest — najprv riadok z `Clen`, potom
@@ -186,6 +222,6 @@ zmazanie kvôli cudziemu kľúču.
 
 | Etapa | Sekcia |
 | --- | --- |
-| G3 | neprihlásený na `/klub` · member na `/sprava` · expirovaná session |
+| G3 | ✅ doplnené (sekcia „G3 — scenár"); ostáva **expirovaná session** — neoverené |
 | H | member nevidí cudzie rekordy · leaderboard len schválené · nikdy e-mail |
 | I | admin operácie v `admin_logs` · admin si nemôže odobrať rolu |

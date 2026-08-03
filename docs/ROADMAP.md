@@ -23,9 +23,9 @@ riziká, návrh commitu, ďalší krok — a čaká sa na schválenie.
 | E | Návrh Supabase databázy a RLS | **DONE** (0025618) | — |
 | F | Pripojenie Supabase | **DONE** (b9eb39d) | — |
 | G1 | Autentifikácia — Supabase klienty | **DONE** (a1f1c45) | — |
-| G2 | Autentifikácia — registrácia, prihlásenie, obnova hesla, session | TODO | zadanie TASK_013 |
-| G3 | Autentifikácia — ochrana ciest na úrovni layoutov | TODO | dokončenie G2 |
-| H | Member funkcie | TODO | dokončenie G |
+| G2 | Autentifikácia — registrácia, prihlásenie, obnova hesla, session | **DONE** (80b10f8) | — |
+| G3 | Autentifikácia — ochrana ciest na úrovni layoutov | **DONE** (ce493e5) | — |
+| H | Member funkcie | TODO | dve rozhodnutia majiteľa (viď `ETAPA_H_KONCEPT.md`) |
 | I | Admin rozhranie | TODO | dokončenie H |
 | J | Testovanie a dokumentácia | TODO | dokončenie I |
 | K | Produkčné spustenie | TODO | dokončenie J + externý audit |
@@ -214,7 +214,7 @@ URL projektu, verejný anon/publishable key, spôsob systémových e-mailov, dom
 
 ## Etapa G — Autentifikácia
 
-Rozdelená na tri kroky: G1 hotový, G2 a G3 čakajú.
+Rozdelená na tri kroky: G1, G2 aj G3 hotové — **celá Etapa G DONE**.
 
 ### G1 — Supabase klienty
 
@@ -234,7 +234,7 @@ Zatiaľ ich nikto neimportuje — pripravené pre G2.
 
 ### G2 — Registrácia, prihlásenie, obnova hesla, session v middleware
 
-**Stav: TODO** · zadanie `docs/CLAUDE_CODE_TASK_013.md`
+**Stav: DONE** (80b10f8) · zadanie `docs/CLAUDE_CODE_TASK_013.md`
 
 Obsah: registrácia, prihlásenie, potvrdenie e-mailu, reset hesla, session
 v middleware, `Clen` záznam pri registrácii (`zabezpecClena`), rola natvrdo
@@ -242,22 +242,27 @@ v middleware, `Clen` záznam pri registrácii (`zabezpecClena`), rola natvrdo
 
 **Kontrolný bod:**
 
-- [ ] registrácia + potvrdenie e-mailu funguje end-to-end
-- [ ] reset hesla funguje end-to-end
-- [ ] duplicitný nickname je odmietnutý
-- [ ] rola sa nedá poslať z klienta
-- [ ] expirovaná session vedie na prihlásenie, nie na chybu 500
-- [ ] chybové hlášky neprezrádzajú, či e-mail v systéme existuje
+- [x] registrácia + potvrdenie e-mailu funguje end-to-end
+- [x] reset hesla funguje end-to-end
+- [x] duplicitný nickname je odmietnutý
+- [x] rola sa nedá poslať z klienta
+- [ ] expirovaná session vedie na prihlásenie, nie na chybu 500 — **neoverené**
+- [x] chybové hlášky neprezrádzajú, či e-mail v systéme existuje
 
 ### G3 — Ochrana ciest na úrovni layoutov
 
-**Stav: TODO** · Blokované dokončením G2.
+**Stav: DONE** (ce493e5)
 
-Obsah: ochrana `/klub` a `/sprava` cez layouty, admin rola, odkaz v menu.
+Obsah: ochrana `/klub` a `/sprava` cez layouty (`requireClen` / `requireAdmin`),
+admin rola, odkaz „Klub" v hlavičke pre všetkých, „Správa" (len admin) na
+stránke `/klub`. Verejné stránky ostali staticky renderované (oprava R1/R2).
 
 **Kontrolný bod:**
 
-- [ ] neprihlásený používateľ je z `/klub` presmerovaný
+- [x] neprihlásený používateľ je z `/klub` presmerovaný (→ `/prihlasenie`)
+- [x] `/sprava` vracia 404 pre neprihláseného aj pre rolu `CLEN`
+- [x] `/admin/objednavky` stále chránený Basic Auth
+- [x] verejné stránky ostali statické (○/●), nie dynamické
 
 ---
 
