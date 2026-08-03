@@ -72,36 +72,3 @@ export async function upravCvik(_prev: SpravaState, formData: FormData): Promise
   revalidatePath('/sprava/cviky')
   return { message: 'Uložené.' }
 }
-
-/** C2 — založenie plánu. H1: admin ho zakladá SÁM SEBE (`clenId` = admin). */
-export async function vytvorPlan(_prev: SpravaState, formData: FormData): Promise<SpravaState> {
-  const admin = await requireAdmin()
-
-  const nazov = reqString(formData.get('nazov'), 80)
-  if (!nazov) return { error: 'Zadaj názov plánu.' }
-
-  const cviky = await prisma.cvik.findMany({
-    where: { clenId: null, aktivny: true },
-    orderBy: { poradie: 'asc' },
-  })
-
-  const polozky: { cvikId: string; cielSerie: number; cielOpakovania: number; poradie: number }[] = []
-  let poradie = 1
-  for (const c of cviky) {
-    if (formData.get(`cvik_${c.id}`) !== 'on') continue
-    const serie = numberInRange(formData.get(`serie_${c.id}`), 1, 50)
-    const opak = numberInRange(formData.get(`opak_${c.id}`), 1, 500)
-    if (!serie || !opak) {
-      return { error: `Pri cviku „${c.nazov}" vyplň série aj opakovania.` }
-    }
-    polozky.push({ cvikId: c.id, cielSerie: serie, cielOpakovania: opak, poradie: poradie++ })
-  }
-  if (polozky.length === 0) return { error: 'Vyber aspoň jeden cvik a zadaj cieľ.' }
-
-  await prisma.treningPlan.create({
-    data: { clenId: admin.id, nazov, cviky: { create: polozky } },
-  })
-
-  revalidatePath('/sprava/plany')
-  return { message: `Plán „${nazov}" vytvorený.` }
-}
