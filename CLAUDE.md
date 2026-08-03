@@ -58,6 +58,7 @@ Schéma má pripravené tabuľky (Clen, …) a stĺpce (`redemptionMethod`,
 ## Git / deploy
 
 - Remote: `maxperformmethod-oss/Gladiator`, autor Maxim Malovec
-  (maximmalovec8@gmail.com). Deploy: Vercel.
+  (maxperformmethod@gmail.com). Deploy: Vercel (účet RPS-2022,
+  gladiator-eight.vercel.app).
 - `TODO.md` = zoznam všetkých TBD + kroky Stripe test→prod. Pri zmenách
   udržiavať aktuálny.
