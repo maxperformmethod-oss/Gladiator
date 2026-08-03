@@ -1,5 +1,9 @@
 * text=auto eol=lf
 
+# Aplikované migrácie sa nikdy nenormalizujú — zmena koncov riadkov rozbije
+# ich checksum a `prisma migrate dev` potom chce resetnúť databázu.
+prisma/migrations/** -text
+
 *.png  binary
 *.jpg  binary
 *.jpeg binary

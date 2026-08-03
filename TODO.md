@@ -28,7 +28,7 @@ mieste. Po dodaní údajov je pri každom bode uvedené, KDE v kóde sa mení.
 
 ## 3. Infraštruktúra — čo treba nakonfigurovať
 
-### 3a. Supabase (databáza) — RUČNÉ KROKY
+### 3a. Supabase (databáza) — ✅ HOTOVÉ (projekt beží, migrácie aplikované)
 
 > **Prečo Supabase (nie Neon):** Fáza 2 = členský systém s QR vstupom.
 > Supabase má natívny **auth** (členské účty) a **realtime** (live overenie
@@ -52,8 +52,11 @@ mieste. Po dodaní údajov je pri každom bode uvedené, KDE v kóde sa mení.
    Cennik, Clen, Objednavka, Dopyt + Fáza 2 modely Permanentka, QRToken,
    VstupHistoria (prázdne, bez logiky — pripravené pre členský QR systém).
 5. Auth/realtime z dashboardu teraz NEzapínaj ani nekonfiguruj — Fáza 2.
+6. **Každý nový projekt (staging aj produkcia):** odober verejným rolám právo
+   na platformový helper — v SQL Editore spusti
+   `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated, PUBLIC;`
 
-### 3b. GitHub ↔ Vercel prepojenie — RUČNÉ KROKY
+### 3b. GitHub ↔ Vercel prepojenie — ✅ HOTOVÉ (push spúšťa deploy)
 
 > Vercel projekt `gladiator` vznikol priamym uploadom súborov, takže `git push`
 > zatiaľ NEspúšťa deploy. Repo je pripravené (build je čistý `next build`,
@@ -84,7 +87,7 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 | `STRIPE_SECRET_KEY` | `sk_test_...` z https://dashboard.stripe.com/test/apikeys | Server-side Stripe (vytváranie Checkout Sessions) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_...` (tamtiež) | Verejný Stripe kľúč (rezerva pre budúce použitie) |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_...` zo Stripe webhooku (krok 3d) | Overenie podpisu webhookov |
-| `NEXT_PUBLIC_SITE_URL` | `https://gladiator-ruby.vercel.app` (neskôr vlastná doména) | Stripe success/cancel redirecty + metadata |
+| `NEXT_PUBLIC_SITE_URL` | `https://gladiator-eight.vercel.app` (neskôr vlastná doména) | Stripe success/cancel redirecty + metadata |
 | `ADMIN_USER` | napr. `recepcia` | Basic Auth login pre `/admin/objednavky` |
 | `ADMIN_PASSWORD` | SILNÉ heslo (nie slovníkové) | Basic Auth heslo pre `/admin/objednavky` |
 
@@ -97,7 +100,7 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 - [ ] **Lokálne**: `stripe listen --forward-to localhost:3000/api/stripe/webhook`
       → vypísaný `whsec_...` do `STRIPE_WEBHOOK_SECRET` v `.env.local`.
 - [ ] **Produkčne**: Stripe dashboard → Developers → Webhooks → Add endpoint
-      `https://gladiator-ruby.vercel.app/api/stripe/webhook`, eventy
+      `https://gladiator-eight.vercel.app/api/stripe/webhook`, eventy
       `checkout.session.completed` + `checkout.session.expired` → signing
       secret do Vercel env (`STRIPE_WEBHOOK_SECRET`).
 
@@ -134,10 +137,17 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 
 ## 6. Etapa G+ — bezpečnosť a infraštruktúra (nesplnené)
 
-- [ ] `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated`
-      — verejné roly nemajú mať právo spúšťať tento trigger-helper.
-- [ ] Založiť **staging** Supabase projekt (rozhodnutie D-11, nesplnené) — dnes
-      existuje jediný projekt `dhuynypsdbqdkkaqjxwv`, staging neexistuje.
+- [x] `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated, PUBLIC`
+      — na stagingu `dhuynypsdbqdkkaqjxwv` aplikované 3. 8. 2026. **Nie je to Prisma
+      migrácia zámerne** — `rls_auto_enable()` je event trigger funkcia Supabase
+      platformy, nie náš objekt. V každom **NOVOM** Supabase projekte (staging aj
+      produkcia) treba tento príkaz spustiť ručne cez SQL Editor ako súčasť
+      zakladania prostredia (viď §3a krok 6).
+- [ ] **BLOKÉR — založiť staging Supabase projekt PRED tým, než dostane prístup
+      prvý človek mimo Maxima a Claude Code** (rozhodnutie D-11, nesplnené). Dnes
+      existuje jediný projekt `dhuynypsdbqdkkaqjxwv`; **dovtedy je databáza len
+      naša a migrácie sú bez rizika.** Ako náhle pribudne externý prístup,
+      migrácie na spoločnú DB už riziko sú.
 - [ ] **Dva Vercel projekty na jednom repozitári:** živý pod účtom RPS-2022
       (`gladiator-eight.vercel.app`) a mŕtva duplicita pod osobným účtom
       `maximmalovec8-6717` (`gladiator-ruby.vercel.app`, posledný deploy ~18. 7.).
@@ -157,3 +167,7 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
       `…/api/auth/callback**` — **nie** široký wildcard typu `https://domena/**`.
 - [ ] **Supabase Site URL** je teraz `http://localhost:3000` (G2 = len lokálne)
       — pred produkčným spustením prepnúť na produkčnú adresu.
+- [ ] **Supabase Confirm email je dočasne OFF** kvôli testovaniu bez vlastnej
+      domény — **pred produkciou vrátiť na ON.**
+- [ ] **Kúpiť vlastnú doménu** — blokuje Resend (overenie domény), produkčné
+      Redirect URLs aj Stripe live.

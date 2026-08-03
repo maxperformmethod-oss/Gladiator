@@ -71,3 +71,4 @@ dostaneš, `main` sa posunie. Píš „základ potvrdí Maxim".
 | CRLF churn zahltil diffy 8935 riadkami šumu | **Diff musí byť čitateľný, inak sa kontrola nedá spraviť.** |
 | PR #24 sa zmergoval do `main` skôr, než na jeho vetvu pristála oprava z #25 — `main` dostal starú verziu | **Žiadne stacked PR.** Každá vetva vychádza z aktuálneho `main`, každá PR mieri do `main`. |
 | Cowork upravil `TESTOVANIE.md` na disku, zmena zostala necommitnutá a zablokovala prepnutie vetvy | **Po každej editácii súboru Coworkom nasleduje commit — pred akoukoľvek git operáciou.** Cowork na konci odpovede vymenuje súbory, ktorých sa dotkol. |
+| LF normalizácia prepísala už aplikovanú migráciu a rozbila jej checksum — `migrate dev` chcel resetnúť databázu | **Aplikovaná migrácia sa nikdy nereformátuje ani needituje.** `prisma/migrations/**` je v `.gitattributes` vyňaté z normalizácie. |

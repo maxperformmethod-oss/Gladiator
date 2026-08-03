@@ -1,6 +1,6 @@
 # CURRENT_STATUS.md — Gladiator Gym
 
-**Verzia 3.3** · 1. 8. 2026 · po Etape G, pred H
+**Verzia 4.0** · 3. 8. 2026 · po H1, pred merge PR #30
 
 ---
 
@@ -8,116 +8,137 @@
 
 | | |
 | --- | --- |
-| `main` | `ce493e5` (G3, PR #27) + oprava statických stránok (táto PR) |
-| Pracovná vetva | `fix/static-public-pages` (oprava R1/R2) → PR proti `main` |
-| Posledná hotová etapa | **Etapa G** — autentifikácia + ochrana ciest (G1–G3) |
-| Ďalší krok | **Etapa H** — členské funkcie (`docs/ETAPA_H_KONCEPT.md`) |
+| `main` | posledný merge PR #29 (`fix/static-public-pages`) |
+| Pracovná vetva | `feat/training-model` → **PR #30, `1e847b9`, NEZMERGOVANÁ** |
+| Posledná hotová etapa | **H1** — dátový model tréningov + správa cvikov a plánov |
+| Ďalší krok | **H2** — členské obrazovky (`docs/CLAUDE_CODE_TASK_017.md`) |
 
 ---
 
 ## Jedným odsekom
 
-Infraštruktúrna fáza je uzavretá — CI, ochrana `main`, Dependabot, dokumentácia
-aj príručka obsluhy sú hotové a osem runtime zraniteľností v Next.js je
-zaplátaných. Schéma databázy je navrhnutá, zapísaná a **prvá migrácia je
-aplikovaná na staging** — 16 tabuliek, 18 cudzích kľúčov, 8 databázových
-obmedzení, RLS zapnuté na všetkom a nula policies. **Etapa G2 je hotová:** cez
-Supabase Auth sa dá zaregistrovať, prihlásiť a obnoviť heslo (registrácia,
-prihlásenie, e-mailový callback, obnova aj nastavenie nového hesla).
-**Etapa G je uzavretá:** `/klub` je len pre prihlásených členov, `/sprava` len
-pre adminov (ochrana cez layouty, `middleware.ts` nedotknutý), verejné stránky
-ostali staticky renderované. Ďalej ide **Etapa H** — členské funkcie.
+Autentifikácia funguje end-to-end a je ručne overená — registrácia, prihlásenie,
+obnova hesla aj e-mailový callback. `/klub` je len pre prihlásených, `/sprava`
+len pre adminov, `middleware.ts` ostal nedotknutý. Verejný web beží na produkcii.
+**H1 je hotová:** databáza má dátový model tréningov (`TreningPlan`, `PlanCvik`,
+`Trening`, `Seria`), `Cvik` má partiu a voliteľného vlastníka, `Vyzva` má typ
+a nepovinný cvik. V `/sprava` sa dajú spravovať globálne cviky a zakladať plány.
+Čaká sa na merge PR #30 (obsahuje schému → merguje Maxim) a na ručné overenie
+troch admin obrazoviek. Potom ide **H2 — členské obrazovky**.
 
 ---
 
 ## Hotové etapy
 
-| Etapa | Čo | Commit |
+| Etapa | Čo | Commit / PR |
 | --- | --- | --- |
 | A0 | read-only audit repozitára | — |
 | A | dokumentácia | `45ff000` |
 | A1 | CI, Dependabot, ochrana `main` | `58c1687` |
 | A2 | odstránenie zraniteľností Next.js | `3e6f5ef` |
-| C | kostra `/klub`, `/sprava`, prihlasovanie | `2b9cd3c` |
+| C | kostra `/klub`, `/sprava` | `2b9cd3c` |
 | D | PWA manifest a ikony | `2b9cd3c` |
 | — | príručka obsluhy | `cf63bd6` |
 | E | schéma databázy | `0025618` |
-| **F** | **prvá migrácia na staging** | **`b9eb39d`** |
-| **G1** | **Supabase klienty** | **`a1f1c45`** |
-| — | normalizácia line endings na LF | `b3212e7` (v PR #22) |
-| **G2** | **registrácia · prihlásenie · obnova hesla · callback** | `80b10f8` (PR #24) |
-| **G3** | **ochrana `/klub`/`/sprava`, hlavička, odhlásenie** | `ce493e5` (PR #27) |
+| F | prvá migrácia na staging | `b9eb39d` |
+| — | normalizácia line endings na LF | `b3212e7` (PR #22) |
+| G1 | Supabase klienty | `a1f1c45` |
+| G2 | registrácia · prihlásenie · obnova hesla · callback | `80b10f8` (PR #24) |
+| G3 | ochrana `/klub` a `/sprava`, hlavička, odhlásenie | `ce493e5` (PR #27) |
+| — | oprava statických verejných stránok | PR #29 |
+| **H1** | **dátový model tréningov + `/sprava/cviky` a `/sprava/plany`** | **PR #30 — čaká na merge** |
 
 ---
 
-## Vercel a Sentry — overené cez konektory 31. 7. 2026
+## Stav databázy — overený 3. 8. 2026
 
-### Vercel — dva projekty na jednom repozitári
+Supabase projekt `Gladiator gym`, ref `dhuynypsdbqdkkaqjxwv`, eu-west-1.
+**Rola projektu: staging.** Produkčný projekt neexistuje.
+
+| Kontrola | Hodnota |
+| --- | --- |
+| tabuľky | **20** (19 modelov + `_prisma_migrations`) |
+| migrácie | 3 — `20260731000000_init`, `20260803134512_training_model`, `20260803134702_seed_cviky`, všetky `finished`, žiadna `rolled_back` |
+| RLS | zapnuté na všetkom |
+| RLS policies | **0** — verejné REST API je úplne zavreté |
+| `rls_auto_enable()` — `anon` / `authenticated` EXECUTE | **false / false** ✅ (revokované 3. 8.) |
+| účty v `auth.users` | 2, obidva potvrdené |
+| `maxperformmethod@gmail.com` | **ADMIN** |
+| `maximmalovec8@gmail.com` | **CLEN** |
+| globálne cviky (`clenId = null`) | **5** — Drep, Bench press, Mŕtvy ťah, Tlak nad hlavu, Zhyby |
+
+### Poznámka k `rls_auto_enable()`
+
+Je to **event trigger funkcia Supabase platformy**, nie náš objekt. Zámerne nie
+je vo verzovaných migráciách — `REVOKE` sa spúšťa ručne pri zakladaní každého
+nového Supabase projektu. Zapísané v `TODO.md` §6 a `PREVADZKA.md` §5.
+
+---
+
+## Supabase Auth — nastavené 3. 8. 2026
+
+| Nastavenie | Hodnota |
+| --- | --- |
+| Site URL | `https://gladiator-eight.vercel.app` |
+| Redirect URLs | úzky vzor na `/api/auth/callback**` (produkcia + localhost) |
+| Confirm email | **OFF** — dočasne, kvôli testovaniu bez overenej domény |
+
+> **Pred produkciou vrátiť Confirm email na ON.** `TODO.md` §6.
+
+---
+
+## Vercel a Sentry
 
 | | Živý | Mŕtva duplicita |
 | --- | --- | --- |
 | Účet | **RPS-2022** (Pro) | `maximmalovec8-6717's projects` |
 | Doména | `gladiator-eight.vercel.app` | `gladiator-ruby.vercel.app` |
-| Projekt ID | — (MCP naň nevidí) | `prj_HB9ohhHmBaZY7eCb7ZgpuYwfbTja` |
-| Nasadenia | robí PR checks aj produkciu | **1**, z ~18.–19. 7., odvtedy nič |
+| Nasadenia | PR checks aj produkcia | 1, z ~18.–19. 7., odvtedy nič |
 
-Kanonický je **RPS-2022**. Duplicitu odpojiť od GitHubu alebo zmazať.
-Vercel MCP konektor je autorizovaný na osobný účet → preautorizovať na RPS-2022.
+Duplicitu odpojiť od GitHubu alebo zmazať. Vercel MCP konektor je autorizovaný
+na osobný účet → preautorizovať na RPS-2022.
 
-**Environment premenné (31. 7. 2026):** `NEXT_PUBLIC_SUPABASE_URL`
-a `NEXT_PUBLIC_SUPABASE_ANON_KEY` sú nastavené pre **Production aj Preview**.
-Prejavia sa až na **nasledujúcom nasadení**.
+**Sentry:** org `maxperformstudio` (DE), projekt `gladiator-gym`, DSN vydané,
+**do aplikácie nezapojené** (vyžaduje `npm install @sentry/nextjs`).
 
-### Sentry
-
-Organizácia `maxperformstudio` (DE región). Projekt **`gladiator-gym`**
-vytvorený 31. 7. 2026, platforma `javascript-nextjs`, DSN vydané.
-**Do aplikácie zatiaľ nezapojené** — vyžaduje `npm install @sentry/nextjs`.
-DSN patrí do env premennej, nie natvrdo do kódu.
+**Git identita:** `maxperformmethod@gmail.com` / Maxim Malovec, nastavené
+globálne 3. 8. E-mail je v GitHube overený.
 
 ---
 
-## Stav databázy — overený 31. 7. 2026
+## Neuzavreté z H1
 
-Supabase projekt `Gladiator gym`, ref `dhuynypsdbqdkkaqjxwv`, eu-west-1.
-**Rola projektu: staging.** Produkčný projekt zatiaľ neexistuje.
+| # | Vec | Kto |
+| --- | --- | --- |
+| 1 | ručné overenie `/sprava/cviky` a `/sprava/plany` ako ADMIN (riadky A5 č. 1, 3, 4) | Maxim — headless sa nedá |
+| 2 | merge PR #30 (obsahuje `prisma/schema.prisma`) | **Maxim** |
+| 3 | zmazať 4 squash-mergnuté vetvy (#25, #26, #27, #29) | Claude Code, po odsúhlasení |
+| 4 | rozhodnúť o 4 otvorených Dependabot PR (#13, #14, #15, #28) | Maxim |
 
-| Kontrola | Hodnota |
-| --- | --- |
-| tabuľky | 16 (15 modelov + `_prisma_migrations`) |
-| s RLS | 16 — všetky |
-| RLS policies | **0** — verejné REST API je úplne zavreté |
-| CHECK obmedzenia | 8 |
-| cudzie kľúče | 18 |
-| `Objednavka_clenId_fkey` | `SET NULL` — účtovný doklad prežije výmaz člena |
-| používatelia v `auth.users` | 0 |
+### Známy kompromis H1
 
-**Jeden nález (WARN):** `public.rls_auto_enable()` je `SECURITY DEFINER`
-a volateľná rolou `anon` cez `/rest/v1/rpc/rls_auto_enable`. Nízka závažnosť,
-ale zbytočná expozícia → `REVOKE EXECUTE`, zapísané v `TODO.md`.
+`vytvorPlan` zakladá plán s `clenId = admin.id` — plán patrí adminovi osobne,
+členovia ho nevidia. Pre H2 to znamená: **člen si plány zakladá sám.**
+Zdieľané „gym plány" (`TreningPlan.clenId = null`) sú neskoršie rozhodnutie;
+uvoľniť stĺpec na nullable je aditívna, bezpečná migrácia.
 
 ---
 
 ## Čo neexistuje
 
-Členské funkcie · administrácia klubu (stránky `/sprava` sú zatiaľ prázdne) ·
-zálohy databázy · produkčný Supabase projekt · automatizované testy ·
-Sentry **v aplikácii** (projekt už existuje)
+Členské obrazovky (zápis tréningu, história, rekordy, prehľad) · výzvy
+a schvaľovanie · rozcestník v `/sprava` · zálohy databázy · produkčný Supabase
+projekt · automatizované testy · Sentry v aplikácii · vlastná doména
 
 ---
 
 ## Najbližší krok
 
-**Etapa H — členské funkcie.** Etapa G je uzavretá. Koncept je v
-`docs/ETAPA_H_KONCEPT.md` a **čaká na dve rozhodnutia majiteľa**:
+**Etapa H2 — členské obrazovky.** Zadanie: `docs/CLAUDE_CODE_TASK_017.md`.
+Rozsah: `/klub` rozcestník, zápis tréningu (`Trening` + `Seria`), História
+s vypočítanými osobnými rekordmi, Prehľad so súhrnmi. Grafy a výzvy sú H3.
 
-1. **Kto schvaľuje výkon** — kto potvrdzuje zapísané výsledky/rekordy.
-2. **Typ výzvy** — aká je mesačná výzva.
-
-Kým tie dve veci nie sú rozhodnuté, Etapa H sa nezačína.
-
-**Build = 43/43.** (Route handler `/api/auth/callback` sa do tally „Generating
-static pages" ráta, preto 43 a nie 42.)
+**Build pred H2 = 44/44.**
 
 ---
 
@@ -125,11 +146,14 @@ static pages" ráta, preto 43 a nie 42.)
 
 | Vec | Kedy |
 | --- | --- |
-| `overrides` pre `postcss` a `sharp` pod `next` | po Etape G |
-| odstránenie `continue-on-error` z jobu `audit` | keď bude 0 zraniteľností |
+| staging Supabase projekt | **pred prvým prístupom niekoho mimo nás** |
+| vlastná doména → Resend, Redirect URLs, Stripe live | čím skôr |
+| Confirm email späť na ON | pred produkciou |
+| produkčný Supabase projekt + Pro so zálohami | pred spustením |
 | Sentry — vyžaduje `@sentry/nextjs` | čaká na schválenie |
-| produkčný Supabase projekt + Supabase Pro so zálohami | pred spustením |
-| právna kontrola podmienok a GDPR, zmluva o spracúvaní údajov | **paralelne, čím skôr** |
+| `overrides` pre `postcss` a `sharp` pod `next` | kedykoľvek |
+| odstránenie `continue-on-error` z jobu `audit` | keď bude 0 zraniteľností |
+| právna kontrola podmienok a GDPR | **paralelne, čím skôr** |
 
 ---
 
@@ -137,7 +161,8 @@ static pages" ráta, preto 43 a nie 42.)
 
 | # | Riziko | Kde |
 | --- | --- | --- |
-| R-1 | Úprava `src/middleware.ts` môže odomknúť `/admin/objednavky` | G2 — **ošetrené**, Basic Auth vetva zachovaná |
-| R-2 | `src/server/auth.ts` je jediná skutočná ochrana dát — aktívna od G3 | `SECURITY.md` |
+| R-1 | Úprava `src/middleware.ts` môže odomknúť `/admin/objednavky` | ošetrené, Basic Auth vetva zachovaná |
+| R-2 | **`src/server/auth.ts` je jediná skutočná ochrana dát** — RLS policies je nula | `SECURITY.md` |
 | R-3 | Migrácia na produkčnú databázu — zatiaľ nevykonaná | pred spustením |
 | R-4 | Žiadne zálohy databázy | pred prvým reálnym členom |
+| R-5 | Heslo ADMIN účtu bolo poslané v chate → **po testovaní zmeniť** | Supabase → Auth → Users |
