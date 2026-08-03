@@ -28,7 +28,7 @@ mieste. Po dodaní údajov je pri každom bode uvedené, KDE v kóde sa mení.
 
 ## 3. Infraštruktúra — čo treba nakonfigurovať
 
-### 3a. Supabase (databáza) — RUČNÉ KROKY
+### 3a. Supabase (databáza) — ✅ HOTOVÉ (projekt beží, migrácie aplikované)
 
 > **Prečo Supabase (nie Neon):** Fáza 2 = členský systém s QR vstupom.
 > Supabase má natívny **auth** (členské účty) a **realtime** (live overenie
@@ -53,7 +53,7 @@ mieste. Po dodaní údajov je pri každom bode uvedené, KDE v kóde sa mení.
    VstupHistoria (prázdne, bez logiky — pripravené pre členský QR systém).
 5. Auth/realtime z dashboardu teraz NEzapínaj ani nekonfiguruj — Fáza 2.
 
-### 3b. GitHub ↔ Vercel prepojenie — RUČNÉ KROKY
+### 3b. GitHub ↔ Vercel prepojenie — ✅ HOTOVÉ (push spúšťa deploy)
 
 > Vercel projekt `gladiator` vznikol priamym uploadom súborov, takže `git push`
 > zatiaľ NEspúšťa deploy. Repo je pripravené (build je čistý `next build`,
@@ -84,7 +84,7 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 | `STRIPE_SECRET_KEY` | `sk_test_...` z https://dashboard.stripe.com/test/apikeys | Server-side Stripe (vytváranie Checkout Sessions) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_...` (tamtiež) | Verejný Stripe kľúč (rezerva pre budúce použitie) |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_...` zo Stripe webhooku (krok 3d) | Overenie podpisu webhookov |
-| `NEXT_PUBLIC_SITE_URL` | `https://gladiator-ruby.vercel.app` (neskôr vlastná doména) | Stripe success/cancel redirecty + metadata |
+| `NEXT_PUBLIC_SITE_URL` | `https://gladiator-eight.vercel.app` (neskôr vlastná doména) | Stripe success/cancel redirecty + metadata |
 | `ADMIN_USER` | napr. `recepcia` | Basic Auth login pre `/admin/objednavky` |
 | `ADMIN_PASSWORD` | SILNÉ heslo (nie slovníkové) | Basic Auth heslo pre `/admin/objednavky` |
 
@@ -97,7 +97,7 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 - [ ] **Lokálne**: `stripe listen --forward-to localhost:3000/api/stripe/webhook`
       → vypísaný `whsec_...` do `STRIPE_WEBHOOK_SECRET` v `.env.local`.
 - [ ] **Produkčne**: Stripe dashboard → Developers → Webhooks → Add endpoint
-      `https://gladiator-ruby.vercel.app/api/stripe/webhook`, eventy
+      `https://gladiator-eight.vercel.app/api/stripe/webhook`, eventy
       `checkout.session.completed` + `checkout.session.expired` → signing
       secret do Vercel env (`STRIPE_WEBHOOK_SECRET`).
 
@@ -134,8 +134,8 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 
 ## 6. Etapa G+ — bezpečnosť a infraštruktúra (nesplnené)
 
-- [ ] `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated`
-      — verejné roly nemajú mať právo spúšťať tento trigger-helper.
+- [x] `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated, PUBLIC`
+      — **splnené** (staging 3. 8., verzované migráciou `20260803150729_revoke_rls_auto_enable`).
 - [ ] **BLOKÉR — založiť staging Supabase projekt PRED tým, než dostane prístup
       prvý človek mimo Maxima a Claude Code** (rozhodnutie D-11, nesplnené). Dnes
       existuje jediný projekt `dhuynypsdbqdkkaqjxwv`; **dovtedy je databáza len
@@ -160,3 +160,7 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
       `…/api/auth/callback**` — **nie** široký wildcard typu `https://domena/**`.
 - [ ] **Supabase Site URL** je teraz `http://localhost:3000` (G2 = len lokálne)
       — pred produkčným spustením prepnúť na produkčnú adresu.
+- [ ] **Supabase Confirm email je dočasne OFF** kvôli testovaniu bez vlastnej
+      domény — **pred produkciou vrátiť na ON.**
+- [ ] **Kúpiť vlastnú doménu** — blokuje Resend (overenie domény), produkčné
+      Redirect URLs aj Stripe live.
