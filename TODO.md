@@ -52,6 +52,9 @@ mieste. Po dodaní údajov je pri každom bode uvedené, KDE v kóde sa mení.
    Cennik, Clen, Objednavka, Dopyt + Fáza 2 modely Permanentka, QRToken,
    VstupHistoria (prázdne, bez logiky — pripravené pre členský QR systém).
 5. Auth/realtime z dashboardu teraz NEzapínaj ani nekonfiguruj — Fáza 2.
+6. **Každý nový projekt (staging aj produkcia):** odober verejným rolám právo
+   na platformový helper — v SQL Editore spusti
+   `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated, PUBLIC;`
 
 ### 3b. GitHub ↔ Vercel prepojenie — ✅ HOTOVÉ (push spúšťa deploy)
 
@@ -135,7 +138,11 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 ## 6. Etapa G+ — bezpečnosť a infraštruktúra (nesplnené)
 
 - [x] `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated, PUBLIC`
-      — **splnené** (staging 3. 8., verzované migráciou `20260803150729_revoke_rls_auto_enable`).
+      — na stagingu `dhuynypsdbqdkkaqjxwv` aplikované 3. 8. 2026. **Nie je to Prisma
+      migrácia zámerne** — `rls_auto_enable()` je event trigger funkcia Supabase
+      platformy, nie náš objekt. V každom **NOVOM** Supabase projekte (staging aj
+      produkcia) treba tento príkaz spustiť ručne cez SQL Editor ako súčasť
+      zakladania prostredia (viď §3a krok 6).
 - [ ] **BLOKÉR — založiť staging Supabase projekt PRED tým, než dostane prístup
       prvý človek mimo Maxima a Claude Code** (rozhodnutie D-11, nesplnené). Dnes
       existuje jediný projekt `dhuynypsdbqdkkaqjxwv`; **dovtedy je databáza len
