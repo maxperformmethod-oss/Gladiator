@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { redirect, notFound } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import type { Clen } from '@prisma/client'
@@ -12,14 +13,17 @@ import { normalizujPrezyvku } from '@/lib/validate'
  * z databázy (nie z JWT — token môže byť zastaraný).
  */
 
-/** Prihlásený používateľ zo Supabase, alebo null. */
-export async function getAuthUser(): Promise<User | null> {
+/**
+ * Prihlásený používateľ zo Supabase, alebo null. `cache()` zbalí viac volaní
+ * v rámci jedného requestu do jedného dotazu (layout aj guard čítajú session).
+ */
+export const getAuthUser = cache(async (): Promise<User | null> => {
   const supabase = await createSupabaseServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   return user
-}
+})
 
 /** Záznam Clen prihláseného používateľa, alebo null. */
 export async function getClen(): Promise<Clen | null> {

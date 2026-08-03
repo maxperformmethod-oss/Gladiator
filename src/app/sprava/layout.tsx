@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+import { requireAdmin } from '@/server/auth'
 
-// Rozpracovaná administrácia klubu — nesmie skončiť vo vyhľadávačoch.
-// Žiadny guard/kontrola prihlásenia — tá príde v Etape G.
+// Administrácia klubu — len rola ADMIN, mimo vyhľadávačov.
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function SpravaLayout({ children }: { children: ReactNode }) {
+export default async function SpravaLayout({ children }: { children: ReactNode }) {
+  // Nie ADMIN → notFound() (nie redirect — o existencii /sprava sa cudzí nedozvie).
+  await requireAdmin()
   return <>{children}</>
 }

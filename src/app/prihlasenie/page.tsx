@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Section } from '@/components/ui/Section'
 import { SectionHeading } from '@/components/ui/SectionHeading'
+import { Notice } from '@/components/ui/Notice'
 import { AuthForm, Field } from '@/components/auth/AuthForm'
 import { prihlas } from '@/server/actions/auth'
 
@@ -25,7 +26,18 @@ export default function PrihlaseniePage() {
             required
           />
         </AuthForm>
+
+        {/* B2: trvalá poznámka — zobrazená vždy, teda neprezradí nič o konkrétnom účte. */}
+        <Notice variant="info" className="mt-6">
+          Ak si sa práve zaregistroval, najprv potvrď e-mail — odkaz sme ti poslali.
+        </Notice>
+
         <p className="mt-6 text-sm text-ink-dim">
+          <Link href="/obnova-hesla" className="text-gold underline-offset-4 hover:underline">
+            Zabudol si heslo?
+          </Link>
+        </p>
+        <p className="mt-2 text-sm text-ink-dim">
           Nemáš konto?{' '}
           <Link href="/registracia" className="text-gold underline-offset-4 hover:underline">
             Zaregistruj sa

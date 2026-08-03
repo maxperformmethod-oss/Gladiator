@@ -5,6 +5,7 @@ import { Providers } from '@/components/Providers'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { BRAND, SITE_URL } from '@/lib/gym'
+import { getClen } from '@/server/auth'
 
 const oswald = Oswald({
   subsets: ['latin-ext'],
@@ -37,15 +38,17 @@ export const viewport: Viewport = {
   themeColor: '#0a0a0a',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // Rola pre hlavičku sa číta zo servera (nie klientskym Supabase dotazom).
+  const clen = await getClen()
   return (
     <html lang="sk" className={`${oswald.variable} ${inter.variable}`}>
       <body>
         <Providers>
           <div className="flex min-h-dvh flex-col">
-            <Header />
+            <Header prihlaseny={!!clen} admin={clen?.rola === 'ADMIN'} />
             <main className="flex-1 pt-16">{children}</main>
             <Footer />
           </div>

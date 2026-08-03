@@ -26,13 +26,16 @@ git checkout -b feat/route-guards
 
 ---
 
-## Tri časti, dve zastavenia
+## Tri časti, jedno zastavenie
+
+> Pôvodne „dve zastavenia" (po A a po B). **Maxim 1. 8. 2026 rozhodol robiť
+> A, B aj C v jednom behu** — jedno zastavenie až na konci.
 
 | Časť | Čo | Po nej |
 | --- | --- | --- |
-| A | ochrana `/klub` a `/sprava` + odhlásenie | **ZASTAV** |
-| B | nálezy A, B, C, D z testovania | **ZASTAV** |
-| C | logovanie dôvodu zlyhania v callbacku | report |
+| A | ochrana `/klub` a `/sprava` + odhlásenie | pokračuj |
+| B | nálezy A, B, C, D z testovania | pokračuj |
+| C | logovanie dôvodu zlyhania v callbacku | **ZASTAV + report** |
 
 ---
 
@@ -102,7 +105,7 @@ klubu, nie v hlavičke.
 Testovací účet: `maxperformmethod@gmail.com`. Rolu `ADMIN` si nastav priamo
 v tabuľke `Clen` a po teste vráť späť na `CLEN`.
 
-**ZASTAV a nahlás túto tabuľku.**
+Nahlás túto tabuľku (v závere — jedno zastavenie, pozri hore).
 
 ---
 
@@ -146,7 +149,7 @@ Rozdeľ na dve hlášky:
 Po neúspešnom odoslaní zostane e-mail a prezývka vyplnené. Heslo sa
 z bezpečnostných dôvodov **vymaže vždy**.
 
-**ZASTAV a nahlás.**
+Nahlás v závere (jedno zastavenie — pozri hore).
 
 ---
 
