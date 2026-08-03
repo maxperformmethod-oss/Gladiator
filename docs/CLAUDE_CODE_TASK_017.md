@@ -50,18 +50,39 @@ Ak niektorá akcia toto pravidlo nespĺňa, je to chyba, nie detail.
 
 ---
 
-## Časť A — rozcestníky (najprv, je to blokér testovania)
+## Časť A — rozcestník a odstránenie `/sprava/plany`
 
-### A1. `/sprava` — rozcestník
+### A1. Rozhodnutie majiteľa zo 4. 8. 2026 — plány patria členom, nie adminovi
 
-Dnes je tam len „Pripravuje sa." a **na `/sprava/cviky` ani `/sprava/plany` sa
-nedá preklikať** — Maxim ich musí písať ručne do adresného riadku. Oprav to.
+**Admin plány nespravuje.** Člen si ich zakladá sám v appke, ako vo vzore
+MAXPERFORM. Admin má v celej aplikácii **dve** úlohy:
 
-`src/app/sprava/page.tsx`: zoznam odkazov na existujúce podstránky
-(**Cviky**, **Plány**, a stubby **Členovia**, **Výzvy**, **Výsledky** označ ako
-„Pripravuje sa"). Použi existujúce `Card` / `ButtonLink`, žiadne nové komponenty.
+1. udržiavať katalóg **globálnych cvikov** (`/sprava/cviky`)
+2. **schvaľovať** — výsledky vo výzvach a v scoreboarde (etapa H3)
 
-### A2. `/klub` — navigácia členskej zóny
+Nič viac. `/sprava/plany` bola nedorozumenie z H1 a **ruší sa**.
+
+### A2. Zmazať `/sprava/plany`
+
+- zmaž `src/app/sprava/plany/page.tsx`
+- zmaž `src/components/sprava/PlanForm.tsx`
+- zmaž akciu `vytvorPlan` zo `src/server/actions/treningy.ts` (zvyšok súboru —
+  `vytvorCvik`, `upravCvik`, `slugify` — nechaj)
+- over, že na `vytvorPlan` ani `PlanForm` nikde nezostala referencia
+
+Dáta sa nestrácajú: v `TreningPlan` aj `PlanCvik` je **0 riadkov** (overené
+v DB 4. 8.). **Schému nemeníš** — tabuľky zostávajú, budú ich napĺňať členovia.
+
+### A3. `/sprava` — rozcestník
+
+Dnes je tam len „Pripravuje sa." a **na `/sprava/cviky` sa nedá preklikať** —
+Maxim musí adresu písať ručne. Oprav to.
+
+`src/app/sprava/page.tsx`: zoznam odkazov. **Cviky** je živý odkaz; **Členovia**,
+**Výzvy**, **Výsledky** zobraz ako neaktívne s poznámkou „Pripravuje sa".
+Použi existujúce `Card` / `ButtonLink`, žiadne nové komponenty.
+
+### A4. `/klub` — navigácia členskej zóny
 
 Podľa `ETAPA_H_KONCEPT.md` sú obrazovky štyri: **Prehľad · Tréning · História ·
 Výzva**. Dnešné stubby `/klub/profil`, `/klub/rebricek`, `/klub/rekordy`
@@ -84,13 +105,18 @@ uveď skutočný počet a rozdiel oproti 44 vysvetli.
 
 ### B1. Plány člena
 
-Člen vidí **svoje** plány (`TreningPlan` s `clenId` = jeho). Vie si založiť nový
-plán: názov + výber z aktívnych globálnych cvikov (`Cvik` kde `clenId = null`
-`AND aktivny = true`) + pri každom `cielSerie` a `cielOpakovania`.
+**Toto je jediné miesto v aplikácii, kde vznikajú plány.** Člen vidí svoje
+(`TreningPlan` s `clenId` = jeho) a vie si založiť nový: názov + výber
+z aktívnych globálnych cvikov (`Cvik` kde `clenId = null AND aktivny = true`),
+pri každom `cielSerie` a `cielOpakovania`.
 
-> **Poznámka k H1:** `vytvorPlan` v `/sprava` zakladá plán s `clenId = admin.id`,
-> teda adminovi osobne. Zdieľané „gym plány" zatiaľ neexistujú — **je to vedomé
-> rozhodnutie, nie chyba.** Nerieš to v H2 a nemeň schému.
+Ďalej musí vedieť plán **premenovať** a **zmazať** (kaskádne zmaže `PlanCvik`;
+`Trening.planId` je `SET NULL`, takže odcvičené tréningy prežijú). Bez toho je
+prvý omylom založený plán navždy na obrazovke.
+
+Formulár nech je zrozumiteľný: zaškrtávacie políčko cviku a polia
+`série × opakovania` musia byť viditeľne prepojené a tlačidlo **Vytvoriť plán**
+nesmie byť schované pod dlhým zoznamom — daj ho aj hore, alebo nechaj lepkavé.
 
 Vlastné cviky člena (`Cvik.clenId` = jeho) schéma umožňuje. **Do H2 ich nedávaj** —
 zbytočne rozširujú rozsah. Stĺpec nechaj pripravený.
@@ -117,8 +143,8 @@ Pravidlá:
 
 ### B3. Súbory
 
-- `src/server/actions/klub.ts` — nový: `vytvorMojPlan`, `zacniTrening`,
-  `pridajSeriu`, `zmazSeriu`, `ukonciTrening`
+- `src/server/actions/klub.ts` — nový: `vytvorMojPlan`, `premenujPlan`,
+  `zmazPlan`, `zacniTrening`, `pridajSeriu`, `zmazSeriu`, `ukonciTrening`
 - `src/app/klub/trening/page.tsx`
 - `src/components/klub/*` — formuláre podľa vzoru `src/components/sprava/CvikForm.tsx`
 
@@ -210,22 +236,24 @@ Zastav a nahlás, ak:
 
 | # | Krok | Očakávané |
 | --- | --- | --- |
-| 1 | `/sprava` ako ADMIN | rozcestník s funkčnými odkazmi na Cviky a Plány |
-| 2 | `/klub` ako CLEN bez tréningov | prázdny stav, žiadne nuly, odkaz na Tréning |
-| 3 | `/klub/trening` → založ plán z 3 cvikov | plán sa zobrazí, v DB `TreningPlan` + 3 `PlanCvik` |
-| 4 | „Začať tréning" → 3 série → „Ukončiť" | `Trening` má `koniec`, 3× `Seria` v DB |
-| 5 | druhý raz „Začať tréning" pri otvorenom | neduplikuje, ponúkne pokračovať |
-| 6 | `/klub/historia` | tréning s dĺžkou a objemom, 1RM sedí s Epley vzorcom |
-| 7 | `/klub` po tréningu | dlaždice ukazujú reálne čísla |
-| 8 | druhý účet (CLEN) | **nevidí cudzie tréningy ani plány** |
+| 1 | `/sprava` ako ADMIN | rozcestník s funkčným odkazom na Cviky; **Plány už neexistujú** |
+| 2 | `/sprava/plany` ako ADMIN | **404** — stránka je zrušená |
+| 3 | `/klub` ako CLEN bez tréningov | prázdny stav, žiadne nuly, odkaz na Tréning |
+| 4 | `/klub/trening` → založ plán z 3 cvikov | plán sa zobrazí, v DB `TreningPlan` + 3 `PlanCvik` |
+| 5 | premenuj a zmaž plán | zmena sa prejaví, po zmazaní zmiznú aj `PlanCvik` |
+| 6 | „Začať tréning" → 3 série → „Ukončiť" | `Trening` má `koniec`, 3× `Seria` v DB |
+| 7 | druhý raz „Začať tréning" pri otvorenom | neduplikuje, ponúkne pokračovať |
+| 8 | `/klub/historia` | tréning s dĺžkou a objemom, 1RM sedí s Epley vzorcom |
+| 9 | `/klub` po tréningu | dlaždice ukazujú reálne čísla |
+| 10 | druhý účet (CLEN) | **nevidí cudzie tréningy ani plány** |
 
-Riadok 8 je bezpečnostný — ak zlyhá, je to vážna chyba, nie kozmetika.
+Riadok 10 je bezpečnostný — ak zlyhá, je to vážna chyba, nie kozmetika.
 
 ---
 
 ## Formát reportu
 
-1. Tabuľka 8 riadkov s tým, čo si vedel overiť sám (`curl`, DB) a čo nie —
+1. Tabuľka 10 riadkov s tým, čo si vedel overiť sám (`curl`, DB) a čo nie —
    **neoznačuj ✅ nič, čo si nespustil**
 2. Zoznam vytvorených a zmenených súborov
 3. Počet stránok v builde + vysvetlenie rozdielu
