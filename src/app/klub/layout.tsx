@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { requireClen } from '@/server/auth'
+import { KlubNav } from '@/components/klub/KlubNav'
 
 // Členská sekcia — prístup len pre prihlásených členov, mimo vyhľadávačov.
 export const metadata: Metadata = {
@@ -10,5 +11,10 @@ export const metadata: Metadata = {
 export default async function KlubLayout({ children }: { children: ReactNode }) {
   // Neprihlásený → /prihlasenie · bez Clen → /registracia/prezyvka · neaktívny → /prihlasenie.
   await requireClen()
-  return <>{children}</>
+  return (
+    <>
+      <KlubNav />
+      {children}
+    </>
+  )
 }
