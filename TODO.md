@@ -136,8 +136,11 @@ nižšie (Environment: **Production** — pokojne zaškrtni aj Preview) → poto
 
 - [ ] `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated`
       — verejné roly nemajú mať právo spúšťať tento trigger-helper.
-- [ ] Založiť **staging** Supabase projekt (rozhodnutie D-11, nesplnené) — dnes
-      existuje jediný projekt `dhuynypsdbqdkkaqjxwv`, staging neexistuje.
+- [ ] **BLOKÉR — založiť staging Supabase projekt PRED tým, než dostane prístup
+      prvý človek mimo Maxima a Claude Code** (rozhodnutie D-11, nesplnené). Dnes
+      existuje jediný projekt `dhuynypsdbqdkkaqjxwv`; **dovtedy je databáza len
+      naša a migrácie sú bez rizika.** Ako náhle pribudne externý prístup,
+      migrácie na spoločnú DB už riziko sú.
 - [ ] **Dva Vercel projekty na jednom repozitári:** živý pod účtom RPS-2022
       (`gladiator-eight.vercel.app`) a mŕtva duplicita pod osobným účtom
       `maximmalovec8-6717` (`gladiator-ruby.vercel.app`, posledný deploy ~18. 7.).
