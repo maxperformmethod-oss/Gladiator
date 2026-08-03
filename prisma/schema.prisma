@@ -153,6 +153,11 @@ model Clen {
   posudeneZapisy  VyzvaZapis[] @relation("PosudeneZapisy")
   adminLogy       AdminLog[]
 
+  // Etapa H — tréningy
+  treningPlany TreningPlan[]
+  treningy     Trening[]
+  vlastneCviky Cvik[]        @relation("VlastneCviky")
+
   @@index([rola, aktivny])
 }
 
@@ -277,6 +282,22 @@ enum VysledokStav {
   ZAMIETNUTE
 }
 
+enum Partia {
+  NOHY
+  HRUD
+  CHRBAT
+  RAMENA
+  BICEPS
+  TRICEPS
+  CORE
+  NEZARADENE
+}
+
+enum VyzvaTyp {
+  SILOVA
+  CASOVA
+}
+
 // Cvik — merateľný cvik do rebríčka/výzvy; jednotka určuje zobrazenie a porovnanie.
 model Cvik {
   id        String   @id @default(cuid())
@@ -284,15 +305,21 @@ model Cvik {
   nazov     String
   popis     String?
   jednotka  Jednotka
+  partia    Partia   @default(NEZARADENE)
   aktivny   Boolean  @default(true)
   poradie   Int      @default(0)
+  clenId    String? // null = globálny cvik (admin); vyplnené = vlastný cvik člena (H2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  rekordy Rekord[]
-  vyzvy   Vyzva[]
+  clen      Clen?      @relation("VlastneCviky", fields: [clenId], references: [id], onDelete: Cascade)
+  rekordy   Rekord[]
+  vyzvy     Vyzva[]
+  planCviky PlanCvik[]
+  serie     Seria[]
 
   @@index([aktivny, poradie])
+  @@index([clenId, aktivny])
 }
 
 // Rekord — osobný rekord člena v cviku; SUKROMNY kým ho člen sám neprihlási do rebríčka.
@@ -324,14 +351,15 @@ model Vyzva {
   slug      String    @unique
   nazov     String
   popis     String?
-  cvikId    String
+  typ       VyzvaTyp  @default(SILOVA)
+  cvikId    String?
   zaciatok  DateTime  @db.Date
   koniec    DateTime  @db.Date
   stav      VyzvaStav @default(NAVRH)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  cvik   Cvik         @relation(fields: [cvikId], references: [id], onDelete: Restrict)
+  cvik   Cvik?        @relation(fields: [cvikId], references: [id], onDelete: Restrict)
   zapisy VyzvaZapis[]
 
   @@index([stav, zaciatok])
@@ -373,4 +401,76 @@ model AdminLog {
 
   @@index([createdAt])
   @@index([aktorId, createdAt])
+}
+
+// ══ Etapa H — tréningy (plán → tréning → séria) ══════════════════════════
+
+// Tréningový plán člena — cviky s cieľom; podklad na zapisovanie tréningov.
+model TreningPlan {
+  id        String   @id @default(cuid())
+  clenId    String
+  nazov     String
+  poradie   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clen     Clen       @relation(fields: [clenId], references: [id], onDelete: Cascade)
+  cviky    PlanCvik[]
+  treningy Trening[]
+
+  @@index([clenId, poradie])
+}
+
+// Cvik v pláne + cieľové série a opakovania.
+model PlanCvik {
+  id             String   @id @default(cuid())
+  planId         String
+  cvikId         String
+  cielSerie      Int
+  cielOpakovania Int
+  poradie        Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  plan TreningPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  cvik Cvik        @relation(fields: [cvikId], references: [id], onDelete: Restrict)
+
+  @@index([planId, poradie])
+}
+
+// Jedno odcvičenie. Dĺžka sa NEUKLADÁ — počíta sa z `zaciatok` a `koniec`.
+model Trening {
+  id        String    @id @default(cuid())
+  clenId    String
+  planId    String?
+  nazov     String
+  zaciatok  DateTime
+  koniec    DateTime? // null = tréning ešte beží
+  poznamka  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  clen  Clen         @relation(fields: [clenId], references: [id], onDelete: Cascade)
+  plan  TreningPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+  serie Seria[]
+
+  @@index([clenId, zaciatok])
+}
+
+// Jedna séria v tréningu.
+model Seria {
+  id         String   @id @default(cuid())
+  treningId  String
+  cvikId     String
+  hmotnost   Decimal  @db.Decimal(6, 2)
+  opakovania Int
+  poradie    Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  trening Trening @relation(fields: [treningId], references: [id], onDelete: Cascade)
+  cvik    Cvik    @relation(fields: [cvikId], references: [id], onDelete: Restrict)
+
+  @@index([treningId, poradie])
+  @@index([cvikId, hmotnost])
 }
