@@ -2,10 +2,10 @@
 
 Ako projekt Gladiator Gym prevádzkovať, kontrolovať a opravovať.
 
-Verzia 1.0 · 30. 7. 2026
+**Verzia 2.0 · 3. 8. 2026** · nahrádza v1.0 z 30. 7. (bola zastaraná o štyri etapy)
 
 > **Táto príručka popisuje iba to, čo dnes naozaj existuje.**
-> Po každej etape do nej pribudne kapitola. Nič tu nie je „do budúcna".
+> Nič tu nie je „do budúcna".
 
 ---
 
@@ -13,18 +13,17 @@ Verzia 1.0 · 30. 7. 2026
 
 | Existuje | Neexistuje |
 | --- | --- |
-| verejný web, 14 stránok | používateľské účty |
-| PWA — appka sa dá pridať na plochu | prihlasovanie |
-| kostra `/klub` a `/sprava` s textom „Pripravuje sa" | roly member a admin |
-| databáza Supabase — **prázdna, nula tabuliek** | rekordy, rebríček, výzvy |
-| automatická kontrola kódu pri každej zmene | administrácia klubu |
-| ochrana hlavnej vetvy | zálohy databázy |
+| verejný web na produkcii | členské obrazovky (zápis tréningu, história, rekordy) |
+| PWA — appka sa dá pridať na plochu | výzvy a ich schvaľovanie |
+| **registrácia, prihlásenie, obnova hesla** | zálohy databázy |
+| **roly `CLEN` a `ADMIN`**, ochrana `/klub` a `/sprava` | produkčný Supabase projekt |
+| databáza — **20 tabuliek, 3 migrácie** | Sentry v aplikácii (projekt existuje, nie je zapojený) |
+| **správa cvikov a plánov** v `/sprava` | automatizované testy |
+| automatická kontrola kódu pri každej zmene | vlastná doména |
+| ochrana hlavnej vetvy | právne schválené obchodné podmienky |
 
-**Dnes sa teda nedá nikam prihlásiť** — nie je kam. To príde v etape G.
-
-Adresa `/admin/objednavky` existuje z pôvodného webu, ale vracia chybu 503,
-lebo nemá nastavené heslo. Je to zámerné a bezpečné: keď chýba konfigurácia,
-stránka sa **zamkne**, neotvorí.
+`/admin/objednavky` je stará stránka pôvodného webu s Basic Auth. Keď chýba
+konfigurácia, **zamkne sa** (503) — je to zámerné a bezpečné.
 
 ---
 
@@ -33,36 +32,98 @@ stránka sa **zamkne**, neotvorí.
 | Vec | Kde | Identifikátor |
 | --- | --- | --- |
 | kód | GitHub | `maxperformmethod-oss/Gladiator` |
-| beh webu | Vercel | projekt `gladiator` |
-| verejná adresa | Vercel | `gladiator-ruby.vercel.app` |
+| beh webu | Vercel | účet **RPS-2022**, projekt `gladiator` |
+| verejná adresa | Vercel | **`gladiator-eight.vercel.app`** |
 | databáza | Supabase | projekt `Gladiator gym`, ref `dhuynypsdbqdkkaqjxwv`, Írsko |
+| chyby | Sentry | org `maxperformstudio`, projekt `gladiator-gym` *(nezapojené)* |
+| e-maily | Resend | doručuje **len na `maxperformmethod@gmail.com`** (chýba doména) |
 | dokumentácia | v repozitári | priečinok `docs/` |
+
+> **Mŕtva duplicita:** pod osobným účtom `maximmalovec8-6717` existuje druhý
+> Vercel projekt `gladiator-ruby.vercel.app`. **Nie je živý.** Ak niekde uvidíš
+> túto adresu, je to chyba v dokumentácii — kanonický je `gladiator-eight`.
 
 ---
 
-## 2. Vercel — čo beží na produkcii
+## 2. Účty a role
 
-**Produkcia** je to, čo vidí návštevník na `gladiator-ruby.vercel.app`.
+| Účet | Rola | Načo |
+| --- | --- | --- |
+| `maxperformmethod@gmail.com` | **ADMIN** | správa klubu, `/sprava` |
+| `maximmalovec8@gmail.com` | **CLEN** | testovanie členskej strany |
+
+### Ako zmeniť rolu
+
+Supabase → **SQL Editor**:
+
+```sql
+update public."Clen" set "rola" = 'ADMIN' where email = 'adresa@example.com';
+```
+
+Povolené hodnoty: `CLEN`, `ADMIN`. Nič iné.
+
+### Ako založiť testovací účet, keď e-mail nechodí
+
+Resend bez overenej domény doručí **len na `maxperformmethod@gmail.com`**.
+Preto je v Supabase dočasne **vypnuté „Confirm email"** — nová registrácia je
+použiteľná okamžite bez potvrdzovacieho e-mailu.
+
+Ak by predsa zostal účet nepotvrdený:
+
+```sql
+update auth.users set email_confirmed_at = now(), updated_at = now()
+where email = 'adresa@example.com' and email_confirmed_at is null;
+```
+
+> **PRED PRODUKCIOU:** „Confirm email" vrátiť na **ON**. Zapísané v `TODO.md` §6.
+
+### Kam vedú prihlasovacie stránky
+
+| Adresa | Čo robí |
+| --- | --- |
+| `/registracia` | nový účet |
+| `/prihlasenie` | prihlásenie |
+| `/obnova-hesla` | žiadosť o reset |
+| `/nove-heslo` | nastavenie nového hesla po kliknutí v e-maile |
+| `/api/auth/callback` | spracuje odkaz z e-mailu — **nikdy neotváraj ručne** |
+
+---
+
+## 3. Členská a admin zóna — ako sa tam dostať
+
+| Adresa | Kto | Čo tam je dnes |
+| --- | --- | --- |
+| `/klub` | prihlásený `CLEN` aj `ADMIN` | zatiaľ „Pripravuje sa" + tlačidlo **Správa** (len admin) |
+| `/sprava` | len `ADMIN` | zatiaľ „Pripravuje sa" — **bez odkazov na podstránky** |
+| `/sprava/cviky` | len `ADMIN` | globálne cviky — pridávanie a úprava |
+| `/sprava/plany` | len `ADMIN` | tréningové plány |
+
+> **Pozor — časté nedorozumenie:** `/sprava` je zatiaľ prázdna stránka. Na
+> `/sprava/cviky` a `/sprava/plany` sa **nedá preklikať** — musíš adresu napísať
+> ručne do prehliadača. Rozcestník pribudne v etape H2.
+
+Kto nemá rolu `ADMIN`, dostane na `/sprava/*` **404** (nie 403 — zámerne, aby
+sa nedalo zistiť, že tá stránka vôbec existuje).
+
+---
+
+## 4. Vercel — čo beží na produkcii
+
+**Produkcia** je to, čo vidí návštevník na `gladiator-eight.vercel.app`.
 Nasadzuje sa **výhradne** z vetvy `main`.
 
-**Preview** je skúšobná verzia každej inej vetvy. Má vlastnú náhodnú adresu,
-Google ju neindexuje a nikto sa na ňu náhodou nedostane.
+**Preview** je skúšobná verzia každej inej vetvy — vlastná náhodná adresa,
+Google ju neindexuje.
 
 ### Ako zistiť, čo je nasadené
 
-1. [vercel.com](https://vercel.com) → projekt **gladiator** → záložka **Deployments**
-2. Zoznam je zoradený od najnovšieho. Hľadaj štítok:
-   - **Production** — toto vidia ľudia
-   - **Preview** — skúšobná verzia vetvy
-
-Pri každom deployi je uvedený commit. Ten istý kód nájdeš na GitHube.
+1. [vercel.com](https://vercel.com) → účet **RPS-2022** → projekt **gladiator** → **Deployments**
+2. Štítok **Production** = toto vidia ľudia · **Preview** = skúšobná verzia vetvy
 
 ### Keď deploy zlyhá
 
 Klikni na červený deploy → **Building** → prečítaj posledné riadky logu.
-Skoro vždy je príčina v poslednom commite.
-
-**Nerieš to sám.** Pošli mi tie riadky.
+Skoro vždy je príčina v poslednom commite. **Nerieš to sám** — pošli mi tie riadky.
 
 ### Čo NIKDY nerob vo Vercel dashboarde
 
@@ -73,26 +134,86 @@ Skoro vždy je príčina v poslednom commite.
 
 ---
 
-## 3. GitHub Actions — automatická kontrola
+## 5. Supabase — pohľad do databázy
 
-Pri každom pull requeste sa spustí kontrola s názvom **`quality`**.
-Robí tri veci, v tomto poradí:
+### Čo tam dnes je
 
-| Krok | Čo overuje | Keď zlyhá, znamená to |
-| --- | --- | --- |
-| **Typecheck** | typy v TypeScripte | niekde sa používa premenná zle |
-| **Lint** | štýl a bežné chyby | kód porušuje pravidlá projektu |
-| **Build** | či sa web dá vôbec zostaviť | **toto je najvážnejšie** |
+**20 tabuliek**, 3 aplikované migrácie, 2 účty, 5 globálnych cvikov.
+RLS je zapnuté na všetkom a **policies je nula** — verejné REST API je úplne
+zavreté. Dáta chráni **výhradne aplikačná vrstva** (`src/server/auth.ts`).
 
-Ak `quality` svieti načerveno, **pull request sa nedá zmergovať.** Nie preto,
-že by ti to niekto zakazoval — GitHub to jednoducho neumožní.
+### Užitočné dotazy (SQL Editor)
 
-### Ako sa pozrieť na výsledok
+```sql
+-- aké migrácie sú aplikované
+select migration_name, finished_at, rolled_back_at
+from public._prisma_migrations order by started_at;
 
-**V prehliadači:** GitHub → repozitár → záložka **Actions** → klikni na beh →
-klikni na job `quality` → rozbaľ krok, ktorý má červený krížik.
+-- účty a ich role
+select u.email, u.email_confirmed_at is not null as potvrdeny, c.rola
+from auth.users u left join public."Clen" c on c.email = u.email;
 
-**V termináli:**
+-- globálne cviky
+select nazov, partia, aktivny from public."Cvik" where "clenId" is null;
+```
+
+### Tento projekt je STAGING
+
+**Produkčný projekt zatiaľ neexistuje.** Preto sem nikdy nedávaj reálne osobné
+údaje členov.
+
+**Blokér:** staging projekt sa zakladá **skôr, než dostane prístup prvý človek
+mimo Maxima a Claude Code.** Kým je databáza len naša, migrácie sú bez rizika.
+Vo chvíli, keď si prvý majiteľ zapíše prvý tréning, to prestáva platiť.
+
+### Pri zakladaní KAŽDÉHO nového Supabase projektu
+
+Spusti v SQL Editore:
+
+```sql
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated, PUBLIC;
+```
+
+Nie je to Prisma migrácia zámerne — `rls_auto_enable()` je event trigger funkcia
+Supabase platformy, nie náš objekt.
+
+### Čo NIKDY nerob v Supabase
+
+- nespúšťaj `DROP TABLE`, `TRUNCATE` ani `prisma migrate reset`
+- nemeň heslo databázy bez toho, aby si to povedal
+- nezapínaj nové rozšírenia
+- nemaž nič z priečinka **Authentication**
+
+Ak si čímkoľvek neistý — **odfoť obrazovku a pošli mi ju.**
+
+---
+
+## 6. Migrácie — čo sa naučilo na tvrdo
+
+Migrácie sú súbory v `prisma/migrations/`. Každá má v databáze zapísaný
+**checksum**. Keď sa súbor zmení čo i len o koniec riadku, checksum prestane
+sedieť a `prisma migrate dev` navrhne **reset celej databázy**.
+
+**Reset je zakázaný.** Prišli by sme o účty a dáta.
+
+Poistky, ktoré už sú zavedené:
+
+- `.gitattributes` obsahuje `prisma/migrations/** -text` — Git tie súbory
+  nikdy neprepíše na iné konce riadkov
+- migrácia, ktorá je už aplikovaná, sa **needituje** — vždy sa pridá nová
+
+Keď `migrate dev` napriek tomu navrhne reset: **zastav, nič nepotvrdzuj,
+napíš mi.** Opravuje sa cielene, jedným `UPDATE` v `_prisma_migrations`.
+
+---
+
+## 7. GitHub Actions — automatická kontrola
+
+Pri každom pull requeste beží kontrola **`quality`**: Typecheck → Lint → Build.
+Ak svieti načerveno, **pull request sa nedá zmergovať**.
+
+Druhá kontrola **`audit`** hľadá zraniteľnosti v balíkoch. **Dnes je vždy zelená,
+aj keď niečo nájde** — je tak nastavená zámerne. Neber ju ako dôkaz poriadku.
 
 ```
 gh pr checks           # stav kontrol aktuálnej vetvy
@@ -100,165 +221,124 @@ gh run list --limit 5  # posledných päť behov
 gh run view --log      # celý log
 ```
 
-### Druhá kontrola — `audit`
-
-Hľadá známe zraniteľnosti v balíkoch. **Dnes je vždy zelená, aj keď niečo
-nájde** — je nastavená tak zámerne, aby nezablokovala prácu.
-
-Preto ju neber ako dôkaz, že je všetko v poriadku. Keď odstránime zvyšné
-zraniteľnosti, prepneme ju na skutočnú podmienku.
-
 ---
 
-## 4. Supabase — pohľad do databázy
-
-### Čo tam dnes je
-
-**Nič.** Schéma `public` má nula tabuliek. Žiadny používateľ. Žiadna migrácia.
-
-To nie je chyba — tak to má byť, kým nedokončíme návrh schémy.
-
-### Ako sa pozrieť
-
-1. [supabase.com](https://supabase.com) → projekt **Gladiator gym**
-2. **Table Editor** — tabuľky a ich obsah, ako v Exceli
-3. **SQL Editor** — na dotazy. Užitočné:
-
-```sql
--- aké tabuľky existujú
-select tablename from pg_tables where schemaname = 'public';
-
--- koľko je registrovaných používateľov
-select count(*) from auth.users;
-```
-
-4. **Authentication → Users** — zoznam účtov *(dnes prázdny)*
-5. **Logs** — čo sa v databáze dialo
-
-### Tento projekt je STAGING
-
-Slúži na vývoj a skúšanie. **Produkčný projekt vznikne samostatne** pred
-spustením naostro.
-
-Preto sem nikdy nedávaj reálne osobné údaje členov.
-
-### Čo NIKDY nerob v Supabase
-
-- nespúšťaj `DROP TABLE` ani `TRUNCATE`
-- nemeň heslo databázy bez toho, aby si to povedal
-- nezapínaj nové rozšírenia
-- nemaž nič z priečinka **Authentication**
-
-Ak si čímkoľvek neistý — **odfoť obrazovku a pošli mi ju.** Databázu sa dá
-pokaziť za tri sekundy a opravovať tri dni.
-
----
-
-## 5. Vetvy a pull requesty
-
-### Prečo sa nedá pushovať priamo do `main`
-
-`main` je to, čo beží na produkcii. Ochrana je zapnutá zámerne, aby ti jeden
-unavený príkaz nezhodil web klienta.
-
-Každá zmena musí prejsť touto cestou:
+## 8. Vetvy a pull requesty
 
 ```
 nová vetva  →  commit  →  push  →  pull request  →  quality zelený  →  merge
 ```
 
-### Aké vetvy dnes existujú
+Do `main` sa nepushuje priamo — ochrana je zapnutá zámerne.
 
-| Vetva | Čo v nej je |
-| --- | --- |
-| `main` | to, čo beží na produkcii |
-| `feat/pwa-shell` | PWA a kostra `/klub`, zatiaľ nepushnutá |
+### Pravidlá, ktoré platia
 
-Vetvy `dependabot/...`, ktoré si videl, boli automatické návrhy aktualizácií.
-Všetky sú vyriešené.
-
-### Užitočné príkazy
+- **Žiadne stacked PR.** Každá vetva vychádza z aktuálneho `main`, každá PR
+  mieri do `main`. (PR #24 sa kedysi zmergovala skôr než oprava z #25 a `main`
+  dostal starú verziu.)
+- **PR, ktorá obsahuje `prisma/schema.prisma`, `src/middleware.ts` alebo
+  platobný kód, merguje výhradne Maxim.** Claude Code ju nesmie zmergovať.
+- Vetvy sa mažú až po merge. Pri **squash merge** ich Git neoznačí ako
+  `--merged` — treba overiť stav PR (`gh pr view <číslo>`), nie stav vetvy.
 
 ```
-git status              # čo je rozrobené
+git status                  # čo je rozrobené
 git branch --show-current   # na ktorej vetve som
-git log --oneline -5    # posledných päť zmien
-gh pr list              # otvorené pull requesty
+gh pr list                  # otvorené pull requesty
 ```
 
 ---
 
-## 6. Keď sa niečo pokazí
+## 9. Keď sa niečo pokazí
 
 ### Zásada číslo jeden
 
-**Neopravuj to sám a nemaž nič.** Väčšina škôd v projektoch nevznikne
-z pôvodnej chyby, ale z unáhlenej opravy.
+**Neopravuj to sám a nemaž nič.** Väčšina škôd nevznikne z pôvodnej chyby, ale
+z unáhlenej opravy.
 
 ### Čo spraviť
 
-1. Odfoť alebo skopíruj celú chybovú hlášku, nie len poslednú vetu
+1. Skopíruj celú chybovú hlášku, nie len poslednú vetu
 2. Zapíš si, čo si robil tesne predtým
 3. Spusti `git status` a pošli mi výstup
-4. **Nespúšťaj** `git reset`, `git push --force` ani `npm audit fix`
+4. **Nespúšťaj** `git reset`, `git push --force`, `npm audit fix` ani
+   `prisma migrate reset`
 
 ### Ako sa vracia zmena späť
-
-Každý commit sa dá vrátiť jedným príkazom:
 
 ```
 git revert <hash-commitu>
 ```
 
-Vytvorí nový commit, ktorý zmenu zruší. **História zostane** — vidno, že sa
-niečo skúsilo a vrátilo. Práve preto robíme malé commity: vrátiť sa dá presne
-jedna vec.
+Vytvorí nový commit, ktorý zmenu zruší. História zostane.
 
-Ak je pokazený deploy na produkcii, dá sa vo Vercel dashboarde pri staršom
-deployi kliknúť **Promote to Production**. Web sa vráti do predošlého stavu
-za pár sekúnd.
+Pokazený deploy na produkcii: Vercel → starší deploy → **Promote to Production**.
+
+### Git operácie robí výhradne Claude Code vo VS Code
+
+`.git` je v OneDrive a zamyká sa. Keď git príkazy bežali z iného prostredia,
+rozbil sa index. **Cowork git príkazy nespúšťa.**
 
 ---
 
-## 7. Slovník
+## 10. Slovník
 
 | Pojem | Po ľudsky |
 | --- | --- |
-| **commit** | uložená zmena s popisom, čo sa zmenilo |
+| **commit** | uložená zmena s popisom |
 | **vetva** | samostatná verzia projektu, kde sa dá pracovať bez rizika |
 | **pull request** | návrh na zlúčenie vetvy do `main`, ktorý prejde kontrolou |
 | **merge** | zlúčenie schválenej vetvy do `main` |
+| **squash merge** | všetky commity vetvy sa zlúčia do jedného |
 | **CI** | automatická kontrola pri každom pull requeste |
 | **deploy** | nasadenie novej verzie na server |
 | **staging** | skúšobné prostredie, kde sa nič nerozbije |
 | **migrácia** | zmena štruktúry databázy |
+| **checksum** | odtlačok súboru migrácie — keď nesedí, Prisma chce reset |
 | **RLS** | pravidlá v databáze, kto smie vidieť ktoré riadky |
-| **env premenná** | tajné nastavenie mimo kódu, napr. heslo k databáze |
+| **RLS policy** | konkrétne pravidlo. Máme ich **nula** — dáta chráni appka |
+| **env premenná** | tajné nastavenie mimo kódu |
+| **1RM** | odhad maximálky na jedno opakovanie |
 
 ---
 
-## 8. Denná rutina — čo si všímať
+## 11. Denná rutina — čo si všímať
 
 **Raz za týždeň, päť minút:**
 
 - [ ] GitHub → **Actions** — je posledný beh na `main` zelený?
-- [ ] GitHub → **Pull requests** — nečakajú tam nové Dependabot návrhy?
-- [ ] Vercel → **Deployments** — je posledný Production deploy úspešný?
-- [ ] otvor `gladiator-ruby.vercel.app` a preklikaj pár stránok
+- [ ] GitHub → **Pull requests** — nečakajú tam Dependabot návrhy?
+- [ ] Vercel (účet RPS-2022) → **Deployments** — je posledný Production deploy úspešný?
+- [ ] otvor `gladiator-eight.vercel.app` a preklikaj pár stránok
+- [ ] prihlás sa a over, že `/klub` funguje
 
-**Keď príde e-mail z GitHubu:** e-maily chodia s oneskorením a nemusia
-zodpovedať skutočnosti. Skutočný stav vždy over príkazom `gh pr view` alebo
-priamo na webe GitHubu.
+**Keď príde e-mail z GitHubu:** e-maily chodia s oneskorením. Skutočný stav vždy
+over cez `gh pr view` alebo na webe GitHubu.
 
 ---
 
-## 9. Čo pribudne v ďalších etapách
+## 12. Pred testovacím spustením — čo musí byť hotové
+
+| # | Vec | Stav |
+| --- | --- | --- |
+| 1 | Supabase Site URL = produkčná adresa | ✅ hotové |
+| 2 | Redirect URLs — úzky vzor na `/api/auth/callback**` | ✅ hotové |
+| 3 | Confirm email dočasne OFF | ✅ hotové *(pred produkciou späť ON)* |
+| 4 | `REVOKE EXECUTE` na `rls_auto_enable()` | ✅ hotové |
+| 5 | členské obrazovky (H2) | ⬜ prebieha |
+| 6 | staging Supabase projekt pred cudzím prístupom | ⬜ **blokér** |
+| 7 | vlastná doména → Resend, Stripe live | ⬜ blokuje reálne e-maily |
+| 8 | zálohy databázy (Supabase Pro) | ⬜ pred prvým reálnym členom |
+| 9 | právna kontrola podmienok a GDPR | ⬜ blokuje reálne platby |
+| 10 | Sentry zapojený do aplikácie | ⬜ |
+
+---
+
+## 13. Čo pribudne v ďalších etapách
 
 | Etapa | Kapitola, ktorá sem pribudne |
 | --- | --- |
-| prvá migrácia | ako čítať tabuľky a čo v nich je |
-| prihlasovanie | ako sa prihlásiť, ako si nastaviť admin účet, ako resetovať heslo |
-| členské funkcie | ako appka funguje z pohľadu člena |
-| administrácia | ako schvaľovať výsledky a spravovať cviky |
-| testovanie | zoznam kontrol, ktoré musia prejsť pred spustením |
-| produkcia | ako prepnúť na ostrú databázu a čo overiť pred spustením |
+| H2 | ako appka funguje z pohľadu člena |
+| H3 | ako vypísať výzvu a schvaľovať výsledky |
+| testovanie | zoznam kontrol pred spustením naostro |
+| produkcia | ako prepnúť na ostrú databázu |
