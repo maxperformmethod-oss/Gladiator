@@ -1,6 +1,6 @@
 # CURRENT_STATUS.md — Gladiator Gym
 
-**Verzia 4.0** · 3. 8. 2026 · po H1, pred merge PR #30
+**Verzia 5.0** · 4. 8. 2026 · po H3 (mesačná výzva + rebríček)
 
 ---
 
@@ -8,23 +8,25 @@
 
 | | |
 | --- | --- |
-| `main` | posledný merge PR #29 (`fix/static-public-pages`) |
-| Pracovná vetva | `feat/training-model` → **PR #30, `1e847b9`, NEZMERGOVANÁ** |
-| Posledná hotová etapa | **H1** — dátový model tréningov + správa cvikov a plánov |
-| Ďalší krok | **H2** — členské obrazovky (`docs/CLAUDE_CODE_TASK_017.md`) |
+| `main` | po merge PR #33 (H2c — lokálna členská zóna) |
+| Pracovná vetva | `feat/vyzva-scoreboard` (H3) → vlastný PR do `main` |
+| Posledná hotová etapa | **H3** — mesačná výzva a scoreboard |
+| Ďalší krok | **testovacia fáza** — ladenie podľa spätnej väzby z posilky |
 
 ---
 
 ## Jedným odsekom
 
-Autentifikácia funguje end-to-end a je ručne overená — registrácia, prihlásenie,
-obnova hesla aj e-mailový callback. `/klub` je len pre prihlásených, `/sprava`
-len pre adminov, `middleware.ts` ostal nedotknutý. Verejný web beží na produkcii.
-**H1 je hotová:** databáza má dátový model tréningov (`TreningPlan`, `PlanCvik`,
-`Trening`, `Seria`), `Cvik` má partiu a voliteľného vlastníka, `Vyzva` má typ
-a nepovinný cvik. V `/sprava` sa dajú spravovať globálne cviky a zakladať plány.
-Čaká sa na merge PR #30 (obsahuje schému → merguje Maxim) a na ručné overenie
-troch admin obrazoviek. Potom ide **H2 — členské obrazovky**.
+Autentifikácia funguje end-to-end a je ručne overená. `/klub` je len pre
+prihlásených, `/sprava` len pre adminov, `middleware.ts` ostal nedotknutý.
+**H1–H3 sú hotové** (H1–H2c zmergované, H3 vo vlastnom PR). Členská zóna je od
+H2c **lokálna appka**: tréningové dáta žijú v prehliadači člena (`localStorage`,
+kľúč viazaný na `clenId`), server o nich nevie — počas tréningu sa naň nechodí.
+**H3** pridáva jediné, čo ide na server: **mesačnú výzvu** (`/sprava/vyzvy`
+zakladá a schvaľuje admin) a **rebríček** (`/klub/rebricek`). Hodnotu do výzvy
+posiela člen sám z lokálnych dát (predvyplní sa mu), je to údaj na čestné slovo
+a **schvaľuje ho admin** — vedomé rozhodnutie, v UI priznané. V rebríčku sa
+nikdy nezobrazuje e-mail, len prezývka. Schéma sa v H3 nemenila, žiadna migrácia.
 
 ---
 
@@ -46,7 +48,11 @@ troch admin obrazoviek. Potom ide **H2 — členské obrazovky**.
 | G2 | registrácia · prihlásenie · obnova hesla · callback | `80b10f8` (PR #24) |
 | G3 | ochrana `/klub` a `/sprava`, hlavička, odhlásenie | `ce493e5` (PR #27) |
 | — | oprava statických verejných stránok | PR #29 |
-| **H1** | **dátový model tréningov + `/sprava/cviky` a `/sprava/plany`** | **PR #30 — čaká na merge** |
+| H1 | dátový model tréningov + `/sprava/cviky` | PR #30 |
+| H2 | členské obrazovky (server) | PR #31 |
+| H2b | MPM parita tréningu (per-set váha/opakovania) | PR #32 |
+| H2c | členská zóna ako lokálna appka (port MAXPERFORMu) + migrácia `20260803234707_trening_mpm_parita` (v H2b, aplikovaná) | PR #33 |
+| **H3** | **mesačná výzva + scoreboard** (`/sprava/vyzvy`, `/klub/vyzva`, `/klub/rebricek`) | **tento PR** |
 
 ---
 

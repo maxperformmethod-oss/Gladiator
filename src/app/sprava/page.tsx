@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const polozky = [
   { href: '/sprava/cviky', nazov: 'Cviky', popis: 'Katalóg globálnych cvikov.', aktivne: true },
   { href: '/sprava/clenovia', nazov: 'Členovia', popis: 'Pripravuje sa.', aktivne: false },
-  { href: '/sprava/vyzvy', nazov: 'Výzvy', popis: 'Pripravuje sa.', aktivne: false },
+  { href: '/sprava/vyzvy', nazov: 'Výzvy', popis: 'Mesačná výzva a schvaľovanie zápisov.', aktivne: true },
   { href: '/sprava/vysledky', nazov: 'Výsledky', popis: 'Pripravuje sa.', aktivne: false },
 ]
 

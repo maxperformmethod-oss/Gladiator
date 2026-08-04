@@ -13,17 +13,28 @@ Ako projekt Gladiator Gym prevádzkovať, kontrolovať a opravovať.
 
 | Existuje | Neexistuje |
 | --- | --- |
-| verejný web na produkcii | členské obrazovky (zápis tréningu, história, rekordy) |
-| PWA — appka sa dá pridať na plochu | výzvy a ich schvaľovanie |
-| **registrácia, prihlásenie, obnova hesla** | zálohy databázy |
-| **roly `CLEN` a `ADMIN`**, ochrana `/klub` a `/sprava` | produkčný Supabase projekt |
-| databáza — **20 tabuliek, 3 migrácie** | Sentry v aplikácii (projekt existuje, nie je zapojený) |
-| **správa cvikov a plánov** v `/sprava` | automatizované testy |
-| automatická kontrola kódu pri každej zmene | vlastná doména |
-| ochrana hlavnej vetvy | právne schválené obchodné podmienky |
+| verejný web na produkcii | zálohy databázy |
+| PWA — appka sa dá pridať na plochu | produkčný Supabase projekt |
+| **registrácia, prihlásenie, obnova hesla** | Sentry v aplikácii (projekt existuje, nie je zapojený) |
+| **roly `CLEN` a `ADMIN`**, ochrana `/klub` a `/sprava` | automatizované testy |
+| **členská zóna** — tréning, história, progres, rekordy, časovač | vlastná doména |
+| **mesačná výzva a rebríček** + admin schvaľovanie | právne schválené obchodné podmienky |
+| **správa cvikov** v `/sprava` | server-side záloha tréningových dát člena |
+| databáza — **20 tabuliek, 4 migrácie** | |
+| automatická kontrola kódu pri každej zmene | |
+| ochrana hlavnej vetvy | |
 
 `/admin/objednavky` je stará stránka pôvodného webu s Basic Auth. Keď chýba
 konfigurácia, **zamkne sa** (503) — je to zámerné a bezpečné.
+
+> **Tréningové dáta člena sú lokálne (od H2c).** Plány, história tréningov,
+> rekordy aj progres žijú **iba v prehliadači člena** (`localStorage`, kľúč
+> `gladiator:klub:v1:<clenId>`), server o nich nevie. Dôsledky pre obsluhu:
+> vymazanie údajov prehliadača = strata dát člena (jediná záloha je export JSON
+> v Nastaveniach); na inom zariadení/prehliadači člen svoje dáta nevidí; server
+> **nedokáže** obnoviť tréningy člena. Na server ide len **výzva a rebríček** —
+> hodnotu do výzvy si člen pošle sám a **potvrdzuje ju admin** (údaj na čestné
+> slovo, je to vedomé rozhodnutie majiteľa).
 
 ---
 
@@ -325,12 +336,13 @@ over cez `gh pr view` alebo na webe GitHubu.
 | 2 | Redirect URLs — úzky vzor na `/api/auth/callback**` | ✅ hotové |
 | 3 | Confirm email dočasne OFF | ✅ hotové *(pred produkciou späť ON)* |
 | 4 | `REVOKE EXECUTE` na `rls_auto_enable()` | ✅ hotové |
-| 5 | členské obrazovky (H2) | ⬜ prebieha |
+| 5 | členská zóna (H2/H2b/H2c) + výzva a rebríček (H3) | ✅ hotové (čaká ručné preklikanie) |
 | 6 | staging Supabase projekt pred cudzím prístupom | ⬜ **blokér** |
 | 7 | vlastná doména → Resend, Stripe live | ⬜ blokuje reálne e-maily |
 | 8 | zálohy databázy (Supabase Pro) | ⬜ pred prvým reálnym členom |
 | 9 | právna kontrola podmienok a GDPR | ⬜ blokuje reálne platby |
 | 10 | Sentry zapojený do aplikácie | ⬜ |
+| 11 | členom vysvetliť, že tréningové dáta sú lokálne (export = záloha) | ⬜ pred prvým reálnym členom |
 
 ---
 
@@ -338,7 +350,18 @@ over cez `gh pr view` alebo na webe GitHubu.
 
 | Etapa | Kapitola, ktorá sem pribudne |
 | --- | --- |
-| H2 | ako appka funguje z pohľadu člena |
-| H3 | ako vypísať výzvu a schvaľovať výsledky |
+| ~~H2~~ | ✅ členská zóna hotová (lokálna appka, H2c) |
+| ~~H3~~ | ✅ výzva a schvaľovanie hotové — pozri nižšie |
 | testovanie | zoznam kontrol pred spustením naostro |
+
+### H3 — ako vypísať výzvu a schvaľovať výsledky (obsluha)
+
+1. `/sprava` → **Výzvy** → *Nová výzva*: názov, popis, typ (**Silová** = kg pri
+   konkrétnom cviku, **Časová** = minúty), obdobie, stav **Aktívna**. Naraz môže
+   byť aktívna **len jedna** výzva — appka druhú nepustí.
+2. Člen v `/klub/vyzva` uvidí výzvu, hodnota sa mu **predvyplní z jeho tréningov**
+   v období, a odošle ju. Je to **údaj na čestné slovo**.
+3. `/sprava/vyzvy/<výzva>` → zoznam zápisov. **Schváliť** / **Zamietnuť**
+   (dôvod povinný). Schválené sa objavia v rebríčku `/klub/rebricek`.
+4. Rozhodnutie sa dá kedykoľvek vrátiť späť na čakajúce.
 | produkcia | ako prepnúť na ostrú databázu |
