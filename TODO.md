@@ -3,6 +3,17 @@
 Všetky miesta, kde čakáme na reálne dáta / rozhodnutia od majiteľa, na jednom
 mieste. Po dodaní údajov je pri každom bode uvedené, KDE v kóde sa mení.
 
+## 0. Otvorené po H3 (výzva + rebríček)
+
+- [ ] **Ručné preklikanie H3** (manuálna tabuľka v `docs/CLAUDE_CODE_TASK_020.md`) —
+      hlavne riadok 10 (rebríček druhým účtom nesmie ukázať e-mail) a riadok 14 (iPhone).
+- [ ] **Automatické uzavretie výzvy po `koniec`** — dnes stav mení admin ručne
+      (`NAVRH`/`AKTIVNA`/`UZAVRETA`). Prípadný cron je mimo Fázy 1.
+- [ ] **Členom komunikovať**, že hodnota do výzvy je na čestné slovo a schvaľuje
+      ju obsluha (v UI je to napísané; treba to povedať aj naživo).
+- [ ] Zvážiť notifikáciu členovi po schválení/zamietnutí (dnes to vidí len pri
+      otvorení `/klub/vyzva`). Mimo Fázy 1.
+
 ## 1. Údaje čakajúce na potvrdenie od majiteľa
 
 | Čo chýba | Kde v kóde |

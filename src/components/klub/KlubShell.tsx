@@ -8,6 +8,7 @@ import {
   Dumbbell,
   History,
   LayoutDashboard,
+  Medal,
   Settings,
   Swords,
   Timer,
@@ -30,6 +31,7 @@ const NAV = [
 const SECONDARY = [
   { href: '/klub/casovac', label: 'Časovač', icon: Timer },
   { href: '/klub/vyzva', label: 'Výzva', icon: Swords },
+  { href: '/klub/rebricek', label: 'Rebríček', icon: Medal },
   { href: '/klub/nastavenia', label: 'Nastavenia', icon: Settings },
 ]
 
