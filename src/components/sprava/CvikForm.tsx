@@ -24,13 +24,28 @@ export function CvikForm({
   submitLabel: string
   partie: string[]
   jednotky: string[]
-  cvik?: { id: string; nazov: string; partia: string; jednotka: string; poradie: number; aktivny: boolean }
+  cvik?: { id: string; nazov: string; slug: string; partia: string; jednotka: string; poradie: number; aktivny: boolean }
 }) {
   const [state, formAction, pending] = useActionState<SpravaState, FormData>(action, {})
 
   return (
     <form action={formAction} className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end">
       {cvik && <input type="hidden" name="id" value={cvik.id} />}
+
+      {cvik && (
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-ink-dim">Slug</span>
+          <input
+            value={cvik.slug}
+            readOnly
+            disabled
+            aria-label="Slug (needitovateľný)"
+            title="Slug sa pri premenovaní nemení"
+            className={`${pole} cursor-not-allowed text-ink-dim`}
+          />
+          <span className="text-[11px] text-ink-faint">slug sa pri premenovaní nemení</span>
+        </label>
+      )}
 
       <label className="flex flex-col gap-1 text-sm">
         <span className="text-ink-dim">Názov</span>

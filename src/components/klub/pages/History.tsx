@@ -114,7 +114,7 @@ export default function History() {
                     isSelected
                       ? 'bg-gold text-bg'
                       : trained
-                        ? 'bg-success/15 text-success hover:bg-success/25'
+                        ? 'bg-gold/15 text-gold hover:bg-gold/25'
                         : isToday
                           ? 'border border-dashed border-gold/50 text-ink-dim'
                           : 'text-ink-faint'

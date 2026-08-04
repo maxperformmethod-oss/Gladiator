@@ -217,6 +217,7 @@ export const NAV = [
   { href: '/vybavenie', label: 'Vybavenie' },
   { href: '/galeria', label: 'Galéria' },
   { href: '/eventy', label: 'Eventy' },
+  { href: '/appka', label: 'Appka' },
   { href: '/kontakt', label: 'Kontakt' },
 ] as const
 

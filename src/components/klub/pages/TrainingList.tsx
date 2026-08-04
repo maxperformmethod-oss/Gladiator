@@ -12,6 +12,22 @@ import { Card } from '../ui/Card'
 import { EmptyState } from '../ui/EmptyState'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { formatRelativeDay, plural } from '@/lib/klub/format'
+import type { PlannedSet } from '@/lib/klub/types'
+
+/**
+ * Reálny súhrn cviku namiesto zavádzajúceho „3×10". Zvolený variant:
+ * počet sérií + rozsah váh („3 série · 60–80 kg") — zmestí sa do úzkeho
+ * stĺpca na mobile aj pri veľa sériách, na rozdiel od vypísania každej série.
+ */
+function suhrnCviku(sets: PlannedSet[]): string {
+  const n = sets.length
+  const vahy = sets.map((s) => s.weight).filter((w) => w > 0)
+  if (vahy.length === 0) return plural(n, 'séria', 'série', 'sérií')
+  const min = Math.min(...vahy)
+  const max = Math.max(...vahy)
+  const rozsah = min === max ? `${min}` : `${min}–${max}`
+  return `${plural(n, 'séria', 'série', 'sérií')} · ${rozsah} kg`
+}
 
 export default function TrainingList() {
   const { data, deletePlan, startWorkout } = useApp()
@@ -109,7 +125,7 @@ export default function TrainingList() {
                       <li key={ex.id} className="flex items-center justify-between gap-2">
                         <span className="truncate">{ex.name}</span>
                         <span className="tnum shrink-0 text-xs text-ink-faint">
-                          {ex.sets.length}×{ex.sets[0]?.reps ?? 0}
+                          {suhrnCviku(ex.sets)}
                         </span>
                       </li>
                     ))}

@@ -30,7 +30,7 @@ export function GoalRing({ value, size = 148, strokeWidth = 12, children, comple
           cy={center}
           r={r}
           fill="none"
-          stroke={complete ? 'var(--color-success)' : 'var(--color-gold)'}
+          stroke={complete ? 'var(--color-gold-hi)' : 'var(--color-gold)'}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circ}

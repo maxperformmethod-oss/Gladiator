@@ -13,6 +13,7 @@ import {
 import type {
   ActiveWorkout,
   AppData,
+  KatalogCvik,
   Preferences,
   WorkoutPlan,
   WorkoutSession,
@@ -29,12 +30,13 @@ import {
 import { activeToSessionExercises, sessionVolume } from '@/lib/klub/calc'
 import { uid } from '@/lib/klub/id'
 
-const KATALOG_KEY = 'gladiator:klub:katalog:v1'
+// v2 — formát sa zmenil zo string[] na {nazov, partia}[] (filter podľa partie).
+const KATALOG_KEY = 'gladiator:klub:katalog:v2'
 
 interface AppContextValue {
   data: AppData
   /** Návrhy názvov cvikov z admin katalógu (voľný text ostáva povolený). */
-  katalog: string[]
+  katalog: KatalogCvik[]
   /* plány */
   savePlan: (plan: WorkoutPlan) => void
   deletePlan: (planId: string) => void
@@ -60,7 +62,7 @@ export function AppProvider({
   children,
 }: {
   clenId: string
-  katalog: string[]
+  katalog: KatalogCvik[]
   children: ReactNode
 }) {
   const key = storageKey(clenId)
@@ -75,7 +77,7 @@ export function AppProvider({
 
   // Katalóg cvikov: server ho podá čerstvý; do localStorage ho cacheujeme, nech
   // appka ponúka návrhy aj offline. Ak server nič nepodá (offline), berieme cache.
-  const [katalog, setKatalog] = useState<string[]>(katalogProp)
+  const [katalog, setKatalog] = useState<KatalogCvik[]>(katalogProp)
   useEffect(() => {
     try {
       if (katalogProp.length > 0) {
@@ -83,7 +85,7 @@ export function AppProvider({
         setKatalog(katalogProp)
       } else {
         const cached = localStorage.getItem(KATALOG_KEY)
-        if (cached) setKatalog(JSON.parse(cached) as string[])
+        if (cached) setKatalog(JSON.parse(cached) as KatalogCvik[])
       }
     } catch {
       // localStorage nedostupné – použijeme, čo prišlo zo servera.

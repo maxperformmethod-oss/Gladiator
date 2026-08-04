@@ -104,17 +104,26 @@ where email = 'adresa@example.com' and email_confirmed_at is null;
 
 | Adresa | Kto | Čo tam je dnes |
 | --- | --- | --- |
-| `/klub` | prihlásený `CLEN` aj `ADMIN` | zatiaľ „Pripravuje sa" + tlačidlo **Správa** (len admin) |
-| `/sprava` | len `ADMIN` | zatiaľ „Pripravuje sa" — **bez odkazov na podstránky** |
-| `/sprava/cviky` | len `ADMIN` | globálne cviky — pridávanie a úprava |
-| `/sprava/plany` | len `ADMIN` | tréningové plány |
+| `/klub` | prihlásený `CLEN` aj `ADMIN` | členská appka (tréning, história, progres, rekordy, časovač, výzva, rebríček) — vlastný layout bez hlavičky webu |
+| `/sprava` | len `ADMIN` | rozcestník s odkazmi na podstránky |
+| `/sprava/cviky` | len `ADMIN` | globálny katalóg cvikov — zoskupený podľa partie |
+| `/sprava/vyzvy` | len `ADMIN` | zakladanie výziev a schvaľovanie zápisov |
 
-> **Pozor — časté nedorozumenie:** `/sprava` je zatiaľ prázdna stránka. Na
-> `/sprava/cviky` a `/sprava/plany` sa **nedá preklikať** — musíš adresu napísať
-> ručne do prehliadača. Rozcestník pribudne v etape H2.
+> `/sprava` má **funkčný rozcestník** — na podstránky sa dá preklikať. Členská
+> zóna aj administrácia majú **vlastný layout** (žiadna marketingová hlavička ani
+> päta webu). `/sprava/plany` **už neexistuje** — plány si člen vytvára lokálne
+> v `/klub/trening` (dáta žijú v jeho prehliadači, nie na serveri).
 
 Kto nemá rolu `ADMIN`, dostane na `/sprava/*` **404** (nie 403 — zámerne, aby
 sa nedalo zistiť, že tá stránka vôbec existuje).
+
+### Správa cvikov — slug sa pri premenovaní nemení
+
+`/sprava/cviky` zobrazuje pri každom cviku aj jeho **slug** (needitovateľný).
+Slug sa odvodí z názvu pri **prvom** založení a **pri premenovaní sa už nemení** —
+je to vedomé rozhodnutie (stabilný identifikátor). Preto sa môže stať, že cvik
+„Predkopy" má slug `cvik-drep`. Nie je to chyba; ak to prekáža, cvik deaktivuj
+a založ nový so správnym názvom.
 
 ---
 
@@ -149,7 +158,7 @@ Skoro vždy je príčina v poslednom commite. **Nerieš to sám** — pošli mi 
 
 ### Čo tam dnes je
 
-**20 tabuliek**, 3 aplikované migrácie, 2 účty, 5 globálnych cvikov.
+**20 tabuliek**, 4 aplikované migrácie, 2 účty, 5 globálnych cvikov (overené 4. 8.).
 RLS je zapnuté na všetkom a **policies je nula** — verejné REST API je úplne
 zavreté. Dáta chráni **výhradne aplikačná vrstva** (`src/server/auth.ts`).
 

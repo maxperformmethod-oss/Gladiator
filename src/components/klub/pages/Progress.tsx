@@ -301,7 +301,7 @@ export default function Progress() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-bold">Tréningy po týždňoch</h2>
             {consistency !== null && (
-              <span className="rounded-lg bg-success/12 px-2 py-1 text-xs font-bold text-success">
+              <span className="rounded-lg bg-gold/12 px-2 py-1 text-xs font-bold text-gold">
                 Konzistentnosť {consistency} %
               </span>
             )}

@@ -68,7 +68,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <Icon
                   className={
                     t.kind === 'success'
-                      ? 'size-4 shrink-0 text-success'
+                      ? 'size-4 shrink-0 text-gold'
                       : t.kind === 'error'
                         ? 'size-4 shrink-0 text-danger'
                         : 'size-4 shrink-0 text-gold'

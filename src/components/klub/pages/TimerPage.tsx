@@ -45,7 +45,7 @@ export default function TimerPage() {
             cy="100"
             r={R}
             fill="none"
-            stroke={timer.finishedFlash ? 'var(--color-success)' : 'var(--color-gold)'}
+            stroke={timer.finishedFlash ? 'var(--color-gold)' : 'var(--color-gold)'}
             strokeWidth="10"
             strokeLinecap="round"
             strokeDasharray={CIRC}
@@ -54,7 +54,7 @@ export default function TimerPage() {
           />
         </svg>
         <div className="text-center" role="timer" aria-live="polite">
-          <div className={`tnum text-5xl font-extrabold ${timer.finishedFlash ? 'text-success' : ''}`}>
+          <div className={`tnum text-5xl font-extrabold ${timer.finishedFlash ? 'text-gold' : ''}`}>
             {formatDuration(timer.remaining)}
           </div>
           <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-ink-faint">

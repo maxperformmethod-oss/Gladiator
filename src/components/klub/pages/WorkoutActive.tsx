@@ -140,10 +140,10 @@ export default function WorkoutActive() {
           </button>
         </div>
         <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-surface-3" aria-hidden>
-          <motion.div
-            className="h-full rounded-full bg-gold"
-            animate={{ width: `${Math.round(progress * 100)}%` }}
-            transition={{ duration: 0.3 }}
+          {/* Explicitná šírka (nie motion bez initial) — pri 0/N je prúžok prázdny. */}
+          <div
+            className="h-full rounded-full bg-gold transition-[width] duration-300"
+            style={{ width: `${Math.round(progress * 100)}%` }}
           />
         </div>
       </div>
@@ -163,7 +163,7 @@ export default function WorkoutActive() {
               <div className="mb-1 flex items-center justify-between gap-2">
                 <h2 className="flex min-w-0 items-center gap-2 text-base font-bold">
                   {exDone ? (
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-success/20 text-success">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-gold/20 text-gold">
                       <Check className="size-3.5" aria-hidden />
                     </span>
                   ) : (
@@ -207,7 +207,7 @@ export default function WorkoutActive() {
                   >
                     <span
                       className={`tnum text-center text-xs font-bold ${
-                        set.done ? 'text-success' : 'text-ink-faint'
+                        set.done ? 'text-gold' : 'text-ink-faint'
                       }`}
                     >
                       {setIndex + 1}
@@ -241,8 +241,8 @@ export default function WorkoutActive() {
                       onClick={() => toggleSet(ex.id, set.id)}
                       className={`mx-auto flex size-11 items-center justify-center rounded-lg border transition-colors ${
                         set.done
-                          ? 'border-success bg-success text-bg'
-                          : 'border-line-strong bg-surface-3 text-ink-faint hover:border-success/60 hover:text-success'
+                          ? 'border-gold bg-gold text-bg'
+                          : 'border-line-strong bg-surface-3 text-ink-faint hover:border-gold/60 hover:text-gold'
                       }`}
                     >
                       <Check className="size-5" aria-hidden />

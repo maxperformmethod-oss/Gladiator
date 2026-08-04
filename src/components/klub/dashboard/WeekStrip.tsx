@@ -26,7 +26,7 @@ export function WeekStrip({ sessions }: { sessions: WorkoutSession[] }) {
             <span
               className={`flex size-8 items-center justify-center rounded-full border text-[11px] font-bold ${
                 trained
-                  ? 'border-success/40 bg-success/15 text-success'
+                  ? 'border-gold/40 bg-gold/15 text-gold'
                   : isToday
                     ? 'border-gold/50 border-dashed text-ink-dim'
                     : 'border-line text-ink-faint'

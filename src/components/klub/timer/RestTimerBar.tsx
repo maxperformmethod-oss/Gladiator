@@ -31,7 +31,7 @@ export function RestTimerBar() {
           <div
             className={`mx-auto flex max-w-md items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-xl shadow-black/50 backdrop-blur-md ${
               timer.finishedFlash
-                ? 'border-success/50 bg-success/15'
+                ? 'border-gold/50 bg-gold/15'
                 : 'border-line-strong bg-surface-2/95'
             }`}
           >
