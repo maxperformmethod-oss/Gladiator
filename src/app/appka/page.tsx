@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const funkcie = [
   { nazov: 'Tréningový denník', popis: 'Plány, série, opakovania a váhy — všetko po ruke počas tréningu.' },
   { nazov: 'Rekordy a progres', popis: 'Osobné rekordy a grafy pokroku sa počítajú z tvojich tréningov.' },
-  { nazov: 'Časovač odpočinku', popis: 'Prestávky medzi sériami so zvukom aj vibráciou.' },
+  { nazov: 'Časovač odpočinku', popis: 'Prestávky medzi sériami so zvukom, na podporovaných zariadeniach aj vibráciou.' },
   { nazov: 'Mesačná výzva', popis: 'Zapoj sa do výzvy gymu a porovnaj sa s ostatnými.' },
   { nazov: 'Rebríček', popis: 'Poradie členov podľa výsledkov, ktoré potvrdzuje obsluha.' },
 ]
