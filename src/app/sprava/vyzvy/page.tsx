@@ -21,7 +21,7 @@ export default async function SpravaVyzvyPage() {
   const [vyzvy, cviky] = await Promise.all([
     prisma.vyzva.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { zapisy: true } } },
+      include: { zapisy: { select: { stav: true } } },
     }),
     prisma.cvik.findMany({
       where: { clenId: null, aktivny: true },
@@ -46,7 +46,11 @@ export default async function SpravaVyzvyPage() {
       </Card>
 
       <div className="flex flex-col gap-4">
-        {vyzvy.map((v) => (
+        {vyzvy.map((v) => {
+          const caka = v.zapisy.filter((z) => z.stav === 'CAKA').length
+          const posudene = v.zapisy.filter((z) => z.stav === 'SCHVALENE' || z.stav === 'ZAMIETNUTE').length
+          const zapisyLabel = caka > 0 ? `${caka} čakajú · ${posudene} posúdených` : `${posudene} posúdených`
+          return (
           <Card key={v.id}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -60,9 +64,13 @@ export default async function SpravaVyzvyPage() {
               </div>
               <Link
                 href={`/sprava/vyzvy/${v.id}`}
-                className="display rounded-xl border border-gold-dim px-4 py-2 text-xs tracking-[0.12em] text-gold hover:border-gold hover:text-gold-hi"
+                className={`display rounded-xl border px-4 py-2 text-xs tracking-[0.12em] ${
+                  caka > 0
+                    ? 'border-gold bg-gold/10 text-gold-hi hover:bg-gold/20'
+                    : 'border-gold-dim text-gold hover:border-gold hover:text-gold-hi'
+                }`}
               >
-                Zápisy ({v._count.zapisy})
+                Zápisy · {zapisyLabel}
               </Link>
             </div>
             <VyzvaForm
@@ -83,7 +91,8 @@ export default async function SpravaVyzvyPage() {
               }}
             />
           </Card>
-        ))}
+          )
+        })}
         {vyzvy.length === 0 && <p className="text-sm text-ink-dim">Zatiaľ žiadne výzvy.</p>}
       </div>
     </Section>

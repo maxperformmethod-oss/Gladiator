@@ -23,7 +23,7 @@ export default async function KlubLayout({ children }: { children: ReactNode }) 
     .map((c) => ({ nazov: c.nazov, partia: c.partia.toLowerCase() }))
 
   return (
-    <KlubShell clenId={clen.id} katalog={katalog}>
+    <KlubShell clenId={clen.id} katalog={katalog} rola={clen.rola} prezyvka={clen.prezyvka}>
       {children}
     </KlubShell>
   )

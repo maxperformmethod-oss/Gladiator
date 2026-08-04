@@ -117,6 +117,28 @@ where email = 'adresa@example.com' and email_confirmed_at is null;
 Kto nemá rolu `ADMIN`, dostane na `/sprava/*` **404** (nie 403 — zámerne, aby
 sa nedalo zistiť, že tá stránka vôbec existuje).
 
+### Odhlásenie a prechod medzi zónami
+
+- **Odhlásenie (člen):** v `/klub` dole v bočnej navigácii (desktop) je prezývka
+  a **Odhlásiť sa**; na mobile vedie k nemu **ikona profilu** v hlavičke appky →
+  `/klub/nastavenia`, kde je odhlásenie posledná položka. Po odhlásení → `/`.
+- **Do administrácie:** položku **Správa** (odkaz na `/sprava`) vidí v `/klub`
+  **len admin** — bežný člen ju nedostane ani do HTML stránky. Na desktope je
+  v bočnej navigácii, na mobile v `/klub/nastavenia`.
+- **Z administrácie späť:** hlavička `/sprava` má **„← Späť do appky"** (`/klub`)
+  a **Odhlásiť**.
+
+### Kde sa schvaľujú zápisy výzvy
+
+`/sprava` → dlaždica **Výzvy** (ukazuje, koľko zápisov **čaká**) → `/sprava/vyzvy`
+→ pri konkrétnej výzve tlačidlo **Zápisy · N čakajú · M posúdených** →
+detail výzvy, kde sa každý zápis **Schváli / Zamietne** (dôvod povinný) alebo
+vráti späť na čakajúci. Vlastný zápis admin posúdiť nemôže — musí to iný admin.
+
+> **Osobné rekordy sa NEschvaľujú.** Počítajú sa členovi automaticky z jeho
+> odcvičených sérií v prehliadači — admin ich nikdy nevidí a nie je čo posudzovať.
+> Schvaľujú sa **iba zápisy do výzvy** (hodnota na čestné slovo).
+
 ### Správa cvikov — slug sa pri premenovaní nemení
 
 `/sprava/cviky` zobrazuje pri každom cviku aj jeho **slug** (needitovateľný).
