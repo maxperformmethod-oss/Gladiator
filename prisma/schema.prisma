@@ -134,6 +134,9 @@ model Clen {
   aktivny      Boolean  @default(true)
   meno         String?
   telefon      String?
+  tyzdennyCiel Int      @default(3) // predvoľby tréningu (MPM parita)
+  odpocinokSek Int      @default(90)
+  zvuk         Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -421,21 +424,36 @@ model TreningPlan {
   @@index([clenId, poradie])
 }
 
-// Cvik v pláne + cieľové série a opakovania.
+// Cvik v pláne. Cieľ nie je „N sérií × M opak.", ale zoznam PlanSeria (MPM).
 model PlanCvik {
-  id             String   @id @default(cuid())
-  planId         String
-  cvikId         String
-  cielSerie      Int
-  cielOpakovania Int
-  poradie        Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        String   @id @default(cuid())
+  planId    String
+  cvikId    String
+  poradie   Int      @default(0)
+  poznamka  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  plan TreningPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  cvik Cvik        @relation(fields: [cvikId], references: [id], onDelete: Restrict)
+  plan  TreningPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  cvik  Cvik        @relation(fields: [cvikId], references: [id], onDelete: Restrict)
+  serie PlanSeria[]
 
   @@index([planId, poradie])
+}
+
+// Plánovaná séria — vlastná váha aj opakovania (jadro parity s MPM).
+model PlanSeria {
+  id         String   @id @default(cuid())
+  planCvikId String
+  poradie    Int
+  opakovania Int
+  hmotnost   Decimal  @db.Decimal(6, 2)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  planCvik PlanCvik @relation(fields: [planCvikId], references: [id], onDelete: Cascade)
+
+  @@index([planCvikId, poradie])
 }
 
 // Jedno odcvičenie. Dĺžka sa NEUKLADÁ — počíta sa z `zaciatok` a `koniec`.
@@ -465,6 +483,7 @@ model Seria {
   hmotnost   Decimal  @db.Decimal(6, 2)
   opakovania Int
   poradie    Int
+  dokoncena  Boolean  @default(true) // aktívny tréning zakladá false; história len true
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
