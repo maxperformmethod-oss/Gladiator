@@ -8,13 +8,17 @@ import {
   Dumbbell,
   History,
   LayoutDashboard,
+  LogOut,
   Medal,
   Settings,
+  Shield,
   Swords,
   Timer,
   Trophy,
+  User,
 } from 'lucide-react'
 import type { KatalogCvik } from '@/lib/klub/types'
+import { odhlas } from '@/server/actions/auth'
 import { AppProvider, useApp } from './AppProvider'
 import { ToastProvider } from './ToastProvider'
 import { TimerProvider } from './TimerProvider'
@@ -64,9 +68,18 @@ function TimerBridge({ children }: { children: ReactNode }) {
 }
 
 /** Vizuálny rámec členskej zóny: bočná (desktop) / spodná (mobil) navigácia. */
-function Chrome({ children }: { children: ReactNode }) {
+function Chrome({
+  rola,
+  prezyvka,
+  children,
+}: {
+  rola: string
+  prezyvka: string | null
+  children: ReactNode
+}) {
   const pathname = usePathname()
   const onWorkout = pathname.startsWith('/klub/trening/aktivny')
+  const jeAdmin = rola === 'ADMIN'
 
   return (
     <div className="min-h-dvh lg:flex">
@@ -110,9 +123,40 @@ function Chrome({ children }: { children: ReactNode }) {
             )
           })}
         </nav>
-        <Link href="/" className="px-2 text-[11px] leading-relaxed text-ink-faint hover:text-ink-dim">
-          ← Späť na web
-        </Link>
+
+        {/* Administrácia — iná zóna, len pre admina. Bežný člen ju nedostane ani do HTML. */}
+        {jeAdmin && (
+          <>
+            <div className="my-2 border-t border-line" />
+            <Link
+              href="/sprava"
+              className="flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-gold-hi transition-colors hover:bg-surface-2"
+            >
+              <Shield className="size-5" aria-hidden />
+              Správa
+            </Link>
+          </>
+        )}
+
+        {/* Účet */}
+        <div className="mt-2 border-t border-line pt-3">
+          <div className="flex items-center gap-2 px-3 pb-1 text-sm text-ink">
+            <User className="size-4 shrink-0 text-ink-dim" aria-hidden />
+            <span className="truncate font-semibold">{prezyvka ?? 'Člen'}</span>
+          </div>
+          <form action={odhlas}>
+            <button
+              type="submit"
+              className="flex h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-ink-dim transition-colors hover:bg-surface-2 hover:text-ink"
+            >
+              <LogOut className="size-5" aria-hidden />
+              Odhlásiť sa
+            </button>
+          </form>
+          <Link href="/" className="mt-1 block px-3 text-[11px] leading-relaxed text-ink-faint hover:text-ink-dim">
+            ← Späť na web
+          </Link>
+        </div>
       </aside>
 
       {/* Horná lišta – mobil */}
@@ -137,6 +181,14 @@ function Chrome({ children }: { children: ReactNode }) {
               </Link>
             )
           })}
+          {/* Profil — vedie na Nastavenia, kde je na mobile odhlásenie. */}
+          <Link
+            href="/klub/nastavenia"
+            aria-label="Účet a odhlásenie"
+            className="ml-1 flex size-11 items-center justify-center rounded-xl border border-line text-ink-dim transition-colors hover:text-ink"
+          >
+            <User className="size-5" aria-hidden />
+          </Link>
         </div>
       </header>
 
@@ -187,17 +239,23 @@ function Chrome({ children }: { children: ReactNode }) {
 export function KlubShell({
   clenId,
   katalog,
+  rola,
+  prezyvka,
   children,
 }: {
   clenId: string
   katalog: KatalogCvik[]
+  rola: string
+  prezyvka: string | null
   children: ReactNode
 }) {
   return (
     <AppProvider clenId={clenId} katalog={katalog}>
       <ToastProvider>
         <TimerBridge>
-          <Chrome>{children}</Chrome>
+          <Chrome rola={rola} prezyvka={prezyvka}>
+            {children}
+          </Chrome>
         </TimerBridge>
       </ToastProvider>
     </AppProvider>

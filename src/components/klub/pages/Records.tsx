@@ -98,7 +98,10 @@ export default function Records() {
         </div>
       )}
 
-      <p className="mt-6 text-[11px] leading-relaxed text-ink-faint">
+      <p className="mt-6 text-sm text-ink-dim">
+        Rekordy sa počítajú z tvojich tréningov automaticky. Neschvaľuje ich nikto.
+      </p>
+      <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
         Odhad 1RM je počítaný Epleyho vzorcom (1RM = váha × (1 + opakovania / 30)) a nejde o zmeraný
         výkon. Najťažšia séria = najvyššia hmotnosť dokončenej série. Objem jednej série = opakovania ×
         hmotnosť.
