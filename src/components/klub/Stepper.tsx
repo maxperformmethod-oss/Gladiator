@@ -1,67 +1,67 @@
 'use client'
 
-import { useState } from 'react'
+import { Minus, Plus } from 'lucide-react'
 
-/**
- * Číselný stepper `− [pole] +` (MPM §5). 44×44 dotykové ciele, `inputMode`,
- * prijíma čiarku aj bodku, orezáva do min–max, tabuľkové číslice, aria-labels.
- * Hodnota poľa sa odosiela vo formulári cez `name`.
- */
-export function Stepper({
-  name,
-  defaultValue,
-  min,
-  max,
-  step = 1,
-  decimal = false,
-  label,
-}: {
-  name: string
-  defaultValue: number
-  min: number
-  max: number
-  step?: number
-  decimal?: boolean
+interface StepperProps {
   label: string
-}) {
-  const [txt, setTxt] = useState(String(defaultValue))
+  value: number
+  onChange: (value: number) => void
+  min?: number
+  max?: number
+  step?: number
+  disabled?: boolean
+}
 
-  const clamp = (x: number) => {
-    const c = Math.min(max, Math.max(min, decimal ? Math.round(x * 100) / 100 : Math.round(x)))
-    return Number.isFinite(c) ? c : min
-  }
-  const parse = () => {
-    const n = Number(txt.replace(',', '.'))
-    return Number.isFinite(n) ? n : min
-  }
-  const set = (n: number) => setTxt(String(clamp(n)))
+/** Kompaktný stepper do riadku série – ovládateľný palcom (44 px vysoký, 16 px font). */
+export function Stepper({
+  label,
+  value,
+  onChange,
+  min = 0,
+  max = 999,
+  step = 1,
+  disabled = false,
+}: StepperProps) {
+  const clamp = (n: number) => Math.min(max, Math.max(min, Math.round(n * 100) / 100))
 
   return (
-    <div className="inline-flex h-11 items-stretch overflow-hidden rounded-xl border border-line bg-surface">
+    <div
+      className={`flex h-11 items-center overflow-hidden rounded-lg border border-line bg-surface-3 ${
+        disabled ? 'opacity-50' : ''
+      }`}
+    >
       <button
         type="button"
-        aria-label={`${label}: menej`}
-        onClick={() => set(parse() - step)}
-        className="w-11 text-xl text-ink-dim transition-colors hover:text-ink"
+        aria-label={`Znížiť ${label}`}
+        disabled={disabled}
+        onClick={() => onChange(clamp(value - step))}
+        className="flex h-full w-9 shrink-0 items-center justify-center text-ink-faint hover:text-ink disabled:pointer-events-none"
       >
-        −
+        <Minus className="size-3.5" aria-hidden />
       </button>
       <input
-        name={name}
-        value={txt}
+        type="number"
         aria-label={label}
-        inputMode={decimal ? 'decimal' : 'numeric'}
-        onChange={(e) => setTxt(e.target.value)}
-        onBlur={() => set(parse())}
-        className="w-16 bg-transparent text-center text-base text-ink outline-none [font-variant-numeric:tabular-nums]"
+        inputMode="decimal"
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        disabled={disabled}
+        onChange={(e) => {
+          const n = Number(e.target.value.replace(',', '.'))
+          if (Number.isFinite(n)) onChange(clamp(n))
+        }}
+        className="tnum h-full w-full min-w-0 flex-1 bg-transparent text-center text-base font-bold text-ink outline-none"
       />
       <button
         type="button"
-        aria-label={`${label}: viac`}
-        onClick={() => set(parse() + step)}
-        className="w-11 text-xl text-ink-dim transition-colors hover:text-ink"
+        aria-label={`Zvýšiť ${label}`}
+        disabled={disabled}
+        onClick={() => onChange(clamp(value + step))}
+        className="flex h-full w-9 shrink-0 items-center justify-center text-ink-faint hover:text-ink disabled:pointer-events-none"
       >
-        +
+        <Plus className="size-3.5" aria-hidden />
       </button>
     </div>
   )
