@@ -9,6 +9,7 @@ const polozky = [
   { href: '/klub/trening', label: 'Tréning' },
   { href: '/klub/historia', label: 'História' },
   { href: '/klub/vyzva', label: 'Výzva' },
+  { href: '/klub/nastavenia', label: 'Nastavenia' },
 ]
 
 /** Vodorovná navigácia členskej zóny; aktívna položka je zlato zvýraznená. */
