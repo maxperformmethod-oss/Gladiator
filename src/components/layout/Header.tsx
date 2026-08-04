@@ -38,7 +38,7 @@ export function Header() {
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 md:px-6">
-        <Link href="/" className="flex items-baseline gap-2" aria-label="Domov">
+        <Link href="/" className="flex shrink-0 items-baseline gap-2 whitespace-nowrap" aria-label="Domov">
           <span className="display text-xl text-ink">
             GLADIATOR <span className="gold-text">GYM</span>
           </span>
@@ -47,7 +47,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-5 lg:flex" aria-label="Hlavná navigácia">
+        <nav className="hidden items-center gap-4 xl:flex" aria-label="Hlavná navigácia">
           {[...navItems, ...authItems].map((item) => (
             <Link
               key={item.href}
@@ -73,7 +73,7 @@ export function Header() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-line text-ink lg:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-line text-ink xl:hidden"
           aria-expanded={open}
           aria-label={open ? 'Zavrieť menu' : 'Otvoriť menu'}
         >
@@ -89,7 +89,7 @@ export function Header() {
        * Ako súrodenec sa `fixed` pozicuje voči viewportu (celá obrazovka).
        */}
       {open && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto overscroll-contain bg-bg lg:hidden">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto overscroll-contain bg-bg xl:hidden">
           <nav
             className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-6"
             aria-label="Mobilná navigácia"
