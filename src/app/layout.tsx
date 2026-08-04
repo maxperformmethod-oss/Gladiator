@@ -4,6 +4,7 @@ import './globals.css'
 import { Providers } from '@/components/Providers'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { SiteChrome } from '@/components/layout/SiteChrome'
 import { BRAND, SITE_URL } from '@/lib/gym'
 
 const oswald = Oswald({
@@ -44,11 +45,9 @@ export default function RootLayout({
     <html lang="sk" className={`${oswald.variable} ${inter.variable}`}>
       <body>
         <Providers>
-          <div className="flex min-h-dvh flex-col">
-            <Header />
-            <main className="flex-1 pt-16">{children}</main>
-            <Footer />
-          </div>
+          <SiteChrome header={<Header />} footer={<Footer />}>
+            {children}
+          </SiteChrome>
         </Providers>
       </body>
     </html>

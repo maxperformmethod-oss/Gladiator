@@ -88,9 +88,9 @@ export default function HistoryDetail({ id }: { id: string }) {
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.35, delay: 0.05 }}
-          className="mb-6 rounded-2xl border border-success/30 bg-gradient-to-br from-success/15 via-surface to-surface p-6 text-center"
+          className="mb-6 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/15 via-surface to-surface p-6 text-center"
         >
-          <span className="mx-auto mb-3 flex size-14 items-center justify-center rounded-2xl bg-success text-bg">
+          <span className="mx-auto mb-3 flex size-14 items-center justify-center rounded-2xl bg-gold text-bg">
             <Flag className="size-7" aria-hidden />
           </span>
           <h1 className="display text-2xl text-ink">Tréning dokončený</h1>
@@ -164,11 +164,11 @@ export default function HistoryDetail({ id }: { id: string }) {
               <h3 className="text-sm font-bold">Porovnanie s minulým tréningom</h3>
               <div className="mt-2 flex items-center gap-2 text-sm">
                 {volumeDelta >= 0 ? (
-                  <ArrowUpRight className="size-4 shrink-0 text-success" aria-hidden />
+                  <ArrowUpRight className="size-4 shrink-0 text-gold" aria-hidden />
                 ) : (
                   <ArrowDownRight className="size-4 shrink-0 text-danger" aria-hidden />
                 )}
-                <span className={volumeDelta >= 0 ? 'text-success' : 'text-danger'}>
+                <span className={volumeDelta >= 0 ? 'text-gold' : 'text-danger'}>
                   {volumeDelta >= 0 ? '+' : '−'}
                   {formatKg(Math.abs(volumeDelta))} objem
                 </span>

@@ -14,6 +14,7 @@ import {
   Timer,
   Trophy,
 } from 'lucide-react'
+import type { KatalogCvik } from '@/lib/klub/types'
 import { AppProvider, useApp } from './AppProvider'
 import { ToastProvider } from './ToastProvider'
 import { TimerProvider } from './TimerProvider'
@@ -189,7 +190,7 @@ export function KlubShell({
   children,
 }: {
   clenId: string
-  katalog: string[]
+  katalog: KatalogCvik[]
   children: ReactNode
 }) {
   return (

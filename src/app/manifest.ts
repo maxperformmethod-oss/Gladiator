@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Gladiator',
     description: 'Členská aplikácia Gladiator Gym Lučenec',
     start_url: '/klub',
-    scope: '/',
+    scope: '/klub',
     display: 'standalone',
     background_color: '#0a0a0a',
     theme_color: '#0a0a0a',

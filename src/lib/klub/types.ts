@@ -28,6 +28,16 @@ export const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
 /** Cvik bez priradenej partie sa v štatistikách zobrazuje pod týmto názvom. */
 export const UNASSIGNED_MUSCLE_GROUP_LABEL = 'Nezaradené'
 
+/**
+ * Návrh cviku z admin katalógu (server) — názov + partia (lowercase, zhodná
+ * s `MuscleGroup`, alebo „nezaradene"). Slúži na filtrovanie ponuky v editore
+ * plánu podľa zvolenej partie; voľný text zostáva povolený.
+ */
+export interface KatalogCvik {
+  nazov: string
+  partia: string
+}
+
 /** Jedna plánovaná séria cviku v tréningovom pláne. */
 export interface PlannedSet {
   id: string

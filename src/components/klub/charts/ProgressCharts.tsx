@@ -89,7 +89,7 @@ export function CountBars({ data }: { data: { label: string; count: number }[] }
             content={<ChartTooltip format={(v) => plural(v, 'tréning', 'tréningy', 'tréningov')} />}
             cursor={{ fill: 'var(--color-surface-3)' }}
           />
-          <Bar dataKey="count" fill="var(--color-success)" radius={[6, 6, 0, 0]} maxBarSize={36} />
+          <Bar dataKey="count" fill="var(--color-gold)" radius={[6, 6, 0, 0]} maxBarSize={36} />
         </BarChart>
       </ResponsiveContainer>
     </div>

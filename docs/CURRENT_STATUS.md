@@ -64,7 +64,7 @@ Supabase projekt `Gladiator gym`, ref `dhuynypsdbqdkkaqjxwv`, eu-west-1.
 | Kontrola | Hodnota |
 | --- | --- |
 | tabuľky | **20** (19 modelov + `_prisma_migrations`) |
-| migrácie | 3 — `20260731000000_init`, `20260803134512_training_model`, `20260803134702_seed_cviky`, všetky `finished`, žiadna `rolled_back` |
+| migrácie | 4 — `20260731000000_init`, `20260803134512_training_model`, `20260803134702_seed_cviky`, `20260803234707_trening_mpm_parita`, všetky `finished`, žiadna `rolled_back` (overené 4. 8.) |
 | RLS | zapnuté na všetkom |
 | RLS policies | **0** — verejné REST API je úplne zavreté |
 | `rls_auto_enable()` — `anon` / `authenticated` EXECUTE | **false / false** ✅ (revokované 3. 8.) |
@@ -112,39 +112,32 @@ globálne 3. 8. E-mail je v GitHube overený.
 
 ---
 
-## Neuzavreté z H1
+## Neuzavreté (aktuálne)
 
 | # | Vec | Kto |
 | --- | --- | --- |
-| 1 | ručné overenie `/sprava/cviky` a `/sprava/plany` ako ADMIN (riadky A5 č. 1, 3, 4) | Maxim — headless sa nedá |
-| 2 | merge PR #30 (obsahuje `prisma/schema.prisma`) | **Maxim** |
-| 3 | zmazať 4 squash-mergnuté vetvy (#25, #26, #27, #29) | Claude Code, po odsúhlasení |
-| 4 | rozhodnúť o 4 otvorených Dependabot PR (#13, #14, #15, #28) | Maxim |
+| 1 | ručné preklikanie H3 (manuálna tabuľka TASK_020/021), hlavne bezpečnosť rebríčka a iPhone | Maxim — headless sa nedá |
+| 2 | zmazať staré squash-mergnuté vetvy | Claude Code, po odsúhlasení |
+| 3 | rozhodnúť o otvorených Dependabot PR | Maxim |
 
-### Známy kompromis H1
-
-`vytvorPlan` zakladá plán s `clenId = admin.id` — plán patrí adminovi osobne,
-členovia ho nevidia. Pre H2 to znamená: **člen si plány zakladá sám.**
-Zdieľané „gym plány" (`TreningPlan.clenId = null`) sú neskoršie rozhodnutie;
-uvoľniť stĺpec na nullable je aditívna, bezpečná migrácia.
+> `/sprava/plany` **už neexistuje** — v H2c sa serverová vrstva plánov zrušila,
+> plány si člen vytvára lokálne v `/klub/trening` (dáta v prehliadači). Admin
+> v `/sprava` spravuje len globálny katalóg cvikov a výzvy.
 
 ---
 
 ## Čo neexistuje
 
-Členské obrazovky (zápis tréningu, história, rekordy, prehľad) · výzvy
-a schvaľovanie · rozcestník v `/sprava` · zálohy databázy · produkčný Supabase
-projekt · automatizované testy · Sentry v aplikácii · vlastná doména
+Zálohy databázy · produkčný Supabase projekt · automatizované testy · Sentry
+v aplikácii · vlastná doména · server-side záloha lokálnych tréningových dát člena
 
 ---
 
 ## Najbližší krok
 
-**Etapa H2 — členské obrazovky.** Zadanie: `docs/CLAUDE_CODE_TASK_017.md`.
-Rozsah: `/klub` rozcestník, zápis tréningu (`Trening` + `Seria`), História
-s vypočítanými osobnými rekordmi, Prehľad so súhrnmi. Grafy a výzvy sú H3.
-
-**Build pred H2 = 44/44.**
+**Testovacia fáza** — appka sa nasadí do posilky a ladí sa podľa spätnej väzby.
+Ďalšie väčšie rozhodnutia (napr. výzva na objem podľa partie = nová hodnota
+v enume `VyzvaTyp` → migrácia) sú v `TODO.md` po konzultácii.
 
 ---
 

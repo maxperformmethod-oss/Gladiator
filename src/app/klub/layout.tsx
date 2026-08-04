@@ -14,9 +14,13 @@ export default async function KlubLayout({ children }: { children: ReactNode }) 
   const cviky = await prisma.cvik.findMany({
     where: { clenId: null, aktivny: true },
     orderBy: { poradie: 'asc' },
-    select: { nazov: true },
+    select: { nazov: true, partia: true },
   })
-  const katalog = [...new Set(cviky.map((c) => c.nazov))]
+  // Partiu posielame ako lowercase (zhodné s MuscleGroup v lib/klub); dedup podľa názvu.
+  const videne = new Set<string>()
+  const katalog = cviky
+    .filter((c) => (videne.has(c.nazov) ? false : (videne.add(c.nazov), true)))
+    .map((c) => ({ nazov: c.nazov, partia: c.partia.toLowerCase() }))
 
   return (
     <KlubShell clenId={clen.id} katalog={katalog}>

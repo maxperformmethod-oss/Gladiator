@@ -131,13 +131,6 @@ export default function TrainingEditor({ id }: { id?: string }) {
       transition={{ duration: 0.3 }}
       className="mx-auto max-w-2xl"
     >
-      {/* Katalóg cvikov z /sprava/cviky – návrhy, voľný text ostáva povolený. */}
-      <datalist id={datalistId}>
-        {katalog.map((nazov) => (
-          <option key={nazov} value={nazov} />
-        ))}
-      </datalist>
-
       <div className="mb-6 flex items-center gap-3">
         <button
           type="button"
@@ -210,22 +203,22 @@ export default function TrainingEditor({ id }: { id?: string }) {
                     </div>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                    <TextField
-                      label="Názov cviku"
-                      placeholder="Napr. Drep s činkou"
-                      value={ex.name}
-                      maxLength={60}
-                      list={datalistId}
-                      onChange={(e) => patchExercise(ex.id, { name: e.target.value })}
-                      error={touched && ex.name.trim() === '' ? 'Zadaj názov cviku.' : undefined}
-                    />
+                  {/* Najprv partia, potom cvik — ponuka z katalógu sa zúži na
+                      zvolenú partiu, vlastný názov (voľný text) zostáva povolený. */}
+                  <datalist id={`${datalistId}-${ex.id}`}>
+                    {katalog
+                      .filter((k) => !ex.muscleGroup || k.partia === ex.muscleGroup)
+                      .map((k) => (
+                        <option key={k.nazov} value={k.nazov} />
+                      ))}
+                  </datalist>
+                  <div className="grid gap-3 sm:grid-cols-[auto_1fr]">
                     <div>
                       <label
                         htmlFor={`muscle-group-${ex.id}`}
                         className="mb-1.5 block text-xs font-medium text-ink-dim"
                       >
-                        Partia (voliteľné)
+                        Partia
                       </label>
                       <select
                         id={`muscle-group-${ex.id}`}
@@ -245,6 +238,15 @@ export default function TrainingEditor({ id }: { id?: string }) {
                         ))}
                       </select>
                     </div>
+                    <TextField
+                      label="Cvik"
+                      placeholder={ex.muscleGroup ? 'Vyber alebo napíš cvik' : 'Napr. Drep s činkou'}
+                      value={ex.name}
+                      maxLength={60}
+                      list={`${datalistId}-${ex.id}`}
+                      onChange={(e) => patchExercise(ex.id, { name: e.target.value })}
+                      error={touched && ex.name.trim() === '' ? 'Zadaj názov cviku.' : undefined}
+                    />
                   </div>
 
                   {prev && (

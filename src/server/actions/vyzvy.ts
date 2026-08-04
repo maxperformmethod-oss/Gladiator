@@ -32,7 +32,8 @@ function parseDate(value: unknown): Date | null {
 function parseHodnota(value: unknown): number | null {
   if (typeof value !== 'string') return null
   const n = Number(value.replace(',', '.').trim())
-  if (!Number.isFinite(n) || n < 0 || n > 999999.99) return null
+  // DB vynucuje hodnota > 0 (constraint vyzvazapis_hodnota_kladna) — nula sem nepatrí.
+  if (!Number.isFinite(n) || n <= 0 || n > 999999.99) return null
   return Math.round(n * 100) / 100
 }
 
@@ -158,27 +159,45 @@ export async function posudZapis(_prev: VyzvaState, formData: FormData): Promise
   const akcia = oneOf(formData.get('akcia'), ['schvalit', 'zamietnut', 'vratit'] as const)
   if (!zapisId || !akcia) return { error: 'Neplatná akcia.' }
 
-  const zapis = await prisma.vyzvaZapis.findUnique({ where: { id: zapisId }, select: { id: true, vyzvaId: true } })
+  const zapis = await prisma.vyzvaZapis.findUnique({
+    where: { id: zapisId },
+    select: { id: true, vyzvaId: true, clenId: true },
+  })
   if (!zapis) return { error: 'Zápis sa nenašiel.' }
 
+  // Vlastný zápis nesmie posúdiť ten istý člen (DB constraint
+  // vyzvazapis_ziadne_samoschvalenie). Bez tejto kontroly by update spadol
+  // na DB chybe a akcia by zlyhala ticho — schvaľuje ho iný admin.
+  if (akcia !== 'vratit' && zapis.clenId === admin.id) {
+    return { error: 'Vlastný zápis nemôžeš posúdiť — schváliť či zamietnuť ho musí iný admin.' }
+  }
+
+  let dovod: string | null = null
   if (akcia === 'zamietnut') {
-    const dovod = reqString(formData.get('dovod'), 300)
+    dovod = reqString(formData.get('dovod'), 300)
     if (!dovod) return { error: 'Pri zamietnutí je dôvod povinný.' }
-    await prisma.vyzvaZapis.update({
-      where: { id: zapisId },
-      data: { stav: 'ZAMIETNUTE', posudilId: admin.id, posudene: new Date(), dovodZamietnutia: dovod },
-    })
-  } else if (akcia === 'schvalit') {
-    await prisma.vyzvaZapis.update({
-      where: { id: zapisId },
-      data: { stav: 'SCHVALENE', posudilId: admin.id, posudene: new Date(), dovodZamietnutia: null },
-    })
-  } else {
-    // vrátiť na čakajúce
-    await prisma.vyzvaZapis.update({
-      where: { id: zapisId },
-      data: { stav: 'CAKA', posudilId: null, posudene: null, dovodZamietnutia: null },
-    })
+  }
+
+  try {
+    if (akcia === 'zamietnut') {
+      await prisma.vyzvaZapis.update({
+        where: { id: zapisId },
+        data: { stav: 'ZAMIETNUTE', posudilId: admin.id, posudene: new Date(), dovodZamietnutia: dovod },
+      })
+    } else if (akcia === 'schvalit') {
+      await prisma.vyzvaZapis.update({
+        where: { id: zapisId },
+        data: { stav: 'SCHVALENE', posudilId: admin.id, posudene: new Date(), dovodZamietnutia: null },
+      })
+    } else {
+      // vrátiť na čakajúce
+      await prisma.vyzvaZapis.update({
+        where: { id: zapisId },
+        data: { stav: 'CAKA', posudilId: null, posudene: null, dovodZamietnutia: null },
+      })
+    }
+  } catch {
+    return { error: 'Rozhodnutie sa nepodarilo uložiť. Skús to znova.' }
   }
 
   revalidatePath(`/sprava/vyzvy/${zapis.vyzvaId}`)
@@ -193,7 +212,7 @@ export async function odosliZapis(_prev: VyzvaState, formData: FormData): Promis
   const vyzvaId = reqString(formData.get('vyzvaId'), 40)
   const hodnota = parseHodnota(formData.get('hodnota'))
   if (!vyzvaId) return { error: 'Chýba výzva.' }
-  if (hodnota === null) return { error: 'Zadaj platnú hodnotu.' }
+  if (hodnota === null) return { error: 'Zadaj platnú hodnotu väčšiu ako 0.' }
 
   const vyzva = await prisma.vyzva.findFirst({
     where: { id: vyzvaId, stav: VyzvaStav.AKTIVNA },
@@ -201,11 +220,15 @@ export async function odosliZapis(_prev: VyzvaState, formData: FormData): Promis
   })
   if (!vyzva) return { error: 'Výzva už nie je aktívna.' }
 
-  await prisma.vyzvaZapis.upsert({
-    where: { vyzvaId_clenId: { vyzvaId, clenId: clen.id } },
-    create: { vyzvaId, clenId: clen.id, hodnota, stav: 'CAKA' },
-    update: { hodnota, stav: 'CAKA', posudilId: null, posudene: null, dovodZamietnutia: null },
-  })
+  try {
+    await prisma.vyzvaZapis.upsert({
+      where: { vyzvaId_clenId: { vyzvaId, clenId: clen.id } },
+      create: { vyzvaId, clenId: clen.id, hodnota, stav: 'CAKA' },
+      update: { hodnota, stav: 'CAKA', posudilId: null, posudene: null, dovodZamietnutia: null },
+    })
+  } catch {
+    return { error: 'Zápis sa nepodarilo uložiť. Skús to znova.' }
+  }
 
   revalidatePath('/klub/vyzva')
   revalidatePath('/klub/rebricek')
